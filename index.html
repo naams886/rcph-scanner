@@ -39,7 +39,7 @@
                 <p class="small m-0 opacity-75" id="mode-text">Attendance Mode</p>
             </div>
             <div class="text-end">
-                <div style="font-size: 0.65rem; opacity: 0.6; margin-bottom: 2px;">v13.5-GH</div>
+                <div style="font-size: 0.65rem; opacity: 0.6; margin-bottom: 2px;">v2.0-GH</div>
                 <div class="count-circle">
                     <div class="h4 fw-bold m-0" id="total-count">?</div>
                 </div>
@@ -100,30 +100,61 @@
         }
     }
 
+        // --- NEW onScanSuccess WITH PIN SECURITY ---
     function onScanSuccess(decodedText) {
+        const SCANNER_PIN = "2026"; // Change this to your preferred 4-digit code
+        
         const currentTime = Date.now();
         if (decodedText === lastScannedId && (currentTime - lastScanTime) < COOLDOWN_MS) return;
-
+    
+        // Ask for PIN if this is the first scan of the session
+        if (!window.isAuthorized) {
+            let userPin = prompt("Enter Marshall PIN to authorize scanner:");
+            if (userPin !== SCANNER_PIN) {
+                alert("Unauthorized! Incorrect PIN.");
+                return;
+            }
+            window.isAuthorized = true; // Remembers authorization until page is closed/refreshed
+        }
+    
         lastScannedId = decodedText;
         lastScanTime = currentTime;
-
+    
         html5QrcodeScanner.pause();
         showNotification("SENDING...", "To Google Sheets...", "⏳", "#3b0a4d", false);
-
-        // REPLACEMENT FOR google.script.run
+    
         const mode = modeSwitch.checked ? "verify" : "attendance";
-        const finalUrl = `${GOOGLE_URL}?qrContent=${encodeURIComponent(decodedText)}&mode=${mode}`;
-
-        fetch(finalUrl, { method: 'GET', mode: 'no-cors' })
-            .then(() => {
-                // Because of 'no-cors', we assume success if the request completes
-                const sound = document.getElementById(modeSwitch.checked ? 'beepVerify' : 'beepAttendance');
-                sound.play();
-                showNotification("SUCCESS", "Data Sent to Sheet", "✅", "#28a745", true);
+        // We add a 'secret' parameter to the URL
+        const finalUrl = `${GOOGLE_URL}?qrContent=${encodeURIComponent(decodedText)}&mode=${mode}&secret=RCPH2026`;
+    
+        fetch(finalUrl)
+            .then(response => response.json())
+            .then(res => {
+                let sound, title, color, icon;
+    
+                if (res.status === "SUCCESS") {
+                    title = modeSwitch.checked ? "VERIFIED" : "CONFIRMED";
+                    color = "#28a745";
+                    icon = "✅";
+                    sound = document.getElementById(modeSwitch.checked ? 'beepVerify' : 'beepAttendance');
+                } else if (res.status === "ALREADY" || res.status === "ALREADY_VERIFIED") {
+                    title = "ALREADY SCANNED";
+                    color = "#ffc107";
+                    icon = "⚠️";
+                    sound = document.getElementById('beepWarning');
+                } else {
+                    title = "ERROR";
+                    color = "#dc3545";
+                    icon = "❌";
+                    sound = document.getElementById('beepWarning');
+                }
+    
+                if (sound) { sound.currentTime = 0; sound.play(); }
+                showNotification(title, res.message, icon, color, true);
             })
             .catch(err => {
-                document.getElementById('beepWarning').play();
-                showNotification("ERROR", "Check Internet", "❌", "#dc3545", true);
+                console.log("CORS/Network error");
+                showNotification("SENT", "Check Sheet for Status", "📩", "#3b0a4d", true);
             });
     }
 
