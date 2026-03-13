@@ -17,30 +17,29 @@
         .dashboard-header { background: var(--primary-purple); color: white; padding: 12px 15px; border-radius: 15px; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .scanner-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 4px solid white; }
         
-        /* v7.3: The Transparent Floating Glass Window */
+        /* v7.4: Small, 50% Transparent, No-Blur Card */
         #profile-card { 
             position: fixed; top: 15px; left: 50%; transform: translateX(-50%); 
-            width: 92%; max-width: 440px; 
-            background: rgba(255, 255, 255, 0.2) !important;
-            backdrop-filter: blur(15px) saturate(180%) !important; 
-            -webkit-backdrop-filter: blur(15px) saturate(180%) !important;
-            border-radius: 22px; padding: 20px; text-align: center; z-index: 10000; 
+            width: 85%; max-width: 380px; /* Smaller size */
+            background: rgba(255, 255, 255, 0.5) !important; /* 50% Transparent */
+            backdrop-filter: none !important; /* No blur */
+            -webkit-backdrop-filter: none !important;
+            border-radius: 15px; padding: 15px; text-align: center; z-index: 10000; 
             display: none; 
-            box-shadow: 0 15px 45px rgba(0,0,0,0.15) !important;
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
-            border-top: 8px solid transparent !important; /* Contextual color bar */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+            border-top: 6px solid transparent !important;
         }
 
         #reader__video { height: 360px !important; object-fit: cover; width: 100% !important; border-radius: 12px; }
         #reader { width: 100% !important; border: none !important; }
 
-        /* v7.3: Strict CSS to kill button text */
+        /* v7.4: THE CSS NUKE FOR TORCH TEXT */
         #reader button { 
-            font-size: 0px !important; /* Hide original text */
-            color: transparent !important;
+            color: transparent !important; /* Makes library text invisible */
+            font-size: 0px !important; 
+            position: relative;
             background-color: var(--primary-purple) !important; 
-            border: none !important; border-radius: 12px !important; 
-            margin: 15px auto !important; 
+            border-radius: 10px !important; 
         }
 
         #control-row { padding: 8px 12px; display: flex; gap: 8px; align-items: center; background: #fff; border-bottom: 1px solid #eee; }
@@ -48,7 +47,7 @@
         #btn-checkin { background: var(--primary-purple); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 0.8rem; padding: 0 15px; height: 38px; white-space: nowrap; }
 
         #extra-controls { display: flex; gap: 6px; }
-        #extra-controls button { width: 38px !important; height: 38px !important; border-radius: 50% !important; border: none !important; display: flex; align-items: center; justify-content: center; font-size: 1.2rem !important; }
+        #extra-controls button { width: 38px !important; height: 38px !important; border-radius: 50% !important; border: none !important; display: flex; align-items: center; justify-content: center; font-size: 1.2rem !important; color: white !important; }
 
         .count-circle { background: white; color: var(--primary-purple); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; }
     </style>
@@ -59,10 +58,10 @@
 
     <div id="profile-card">
         <div class="d-flex align-items-center justify-content-center mb-1">
-            <span id="scan-icon" style="font-size: 24px; margin-right: 10px;"></span>
-            <h5 id="p-name" class="fw-bold m-0" style="font-size: 1.15rem; color: #000;"></h5>
+            <span id="scan-icon" style="font-size: 20px; margin-right: 8px;"></span>
+            <h5 id="p-name" class="fw-bold m-0" style="font-size: 1.1rem; color: #000;"></h5>
         </div>
-        <div id="p-msg" class="mt-2 fw-bold" style="color: #111; font-size: 0.95rem;"></div>
+        <div id="p-msg" class="mt-1 fw-bold" style="color: #000; font-size: 0.9rem;"></div>
     </div>
 
     <div class="main-container">
@@ -70,7 +69,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <h4 class="fw-bold m-0" style="font-size: 1.05rem;">1st RCPH 2026</h4>
-                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v7.3</span>
+                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v7.4</span>
                 </div>
                 <div class="count-circle" id="total-count">?</div>
             </div>
@@ -119,21 +118,23 @@
         document.getElementById('btn-checkin').innerText = isVerify ? "Verify" : "Check-In";
     }
 
+    function cleanGuestName(fullMessage) {
+        // v7.4: Removes the status labels but LEAVES the Title (Mr/Mrs/Tuan/Puan)
+        return fullMessage.split('\n')[0]
+            .replace(/✅|⚠️|❌|SUCCESS:|VERIFIED:|ALREADY CHECKED IN:|ALREADY VERIFIED:|CONFIRMED:|ERROR:/gi, '')
+            .trim();
+    }
+
     function showNotification(title, message, icon, color, status) {
         const card = document.getElementById('profile-card');
-        
-        // Clean underscores and standardize labels
         let displayTitle = title.split('_').join(' '); 
         if (displayTitle === "ALREADY") displayTitle = "ALREADY CHECKED-IN";
         if (displayTitle === "SUCCESS") displayTitle = "VERIFIED";
 
-        let cleanName = message.split('\n')[0].replace(/✅|⚠️|❌|SUCCESS:|VERIFIED:|ALREADY CHECKED IN:|ALREADY VERIFIED:|CONFIRMED:|ERROR:|PUAN \| MRS\. |TUAN \| MR\. /gi, '').trim();
-
         document.getElementById('scan-icon').innerText = icon;
         document.getElementById('p-name').innerText = displayTitle;
-        document.getElementById('p-msg').innerText = cleanName;
+        document.getElementById('p-msg').innerText = cleanGuestName(message);
         
-        // Contextual Top-Bar colors
         if (status === "SUCCESS") {
             document.getElementById('p-name').style.color = "var(--success-green)";
             card.style.borderTopColor = "var(--success-green)";
@@ -147,7 +148,6 @@
 
         card.style.display = "block";
         if(status === "SUCCESS") playSound('beepSuccess'); else playSound('beepWarning');
-
         setTimeout(() => { 
             card.style.display = "none"; 
             if (html5QrcodeScanner.getState() === 3) html5QrcodeScanner.resume();
@@ -162,14 +162,11 @@
             .then(res => res.json())
             .then(res => {
                 if (res.count !== undefined) document.getElementById('total-count').innerText = res.count;
-                const cleanHeaderName = res.message.split('\n')[0].replace(/✅|⚠️|❌|SUCCESS:|VERIFIED:|ALREADY CHECKED IN:|ALREADY VERIFIED:|CONFIRMED:|ERROR:|PUAN \| MRS\. |TUAN \| MR\. /gi, '').trim();
-                document.getElementById('last-person-name').innerText = cleanHeaderName;
-                
-                let icon = "✅"; let color = "var(--success-green)";
+                document.getElementById('last-person-name').innerText = cleanGuestName(res.message);
+                let icon = "✅"; 
                 if (res.status.includes("ALREADY")) icon = "⚠️";
                 else if (res.status === "ERROR") icon = "❌";
-
-                showNotification(res.status, res.message, icon, color, res.status);
+                showNotification(res.status, res.message, icon, "", res.status);
             });
     }
 
@@ -187,27 +184,20 @@
     });
     html5QrcodeScanner.render(onScanSuccess);
 
-    // v7.3: Aggressive Button Text Management
+    // v7.4: Aggressive Hijack for Torch and Camera Buttons
     setInterval(() => {
         const extraContainer = document.getElementById("extra-controls");
         const libButtons = document.querySelectorAll("#reader button");
         libButtons.forEach(btn => {
             const txt = btn.innerText.toUpperCase();
-            
-            // Check for Stop Scanning Button
             if (txt.includes("STOP") || txt.includes("SCANNING")) {
-                btn.innerText = ""; // Clear text node
-                btn.innerHTML = "📸"; // Insert emoji
-                btn.style.fontSize = "1.2rem";
+                btn.innerHTML = "📸"; btn.style.fontSize = "1.2rem"; btn.style.color = "white";
                 btn.style.backgroundColor = "#dc3545";
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             } 
-            // Check for Torch/Flash Button
             if (txt.includes("TORCH") || txt.includes("FLASH") || txt.includes("ON") || txt.includes("OFF")) {
-                btn.innerText = ""; // Clear text node
-                btn.innerHTML = "🔦"; // Insert emoji
-                btn.style.fontSize = "1.2rem";
-                btn.style.backgroundColor = "var(--accent-yellow)"; btn.style.color = "#000";
+                btn.innerHTML = "🔦"; btn.style.fontSize = "1.2rem"; btn.style.color = "black";
+                btn.style.backgroundColor = "var(--accent-yellow)";
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             }
         });
