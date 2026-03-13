@@ -17,11 +17,11 @@
         .dashboard-header { background: var(--primary-purple); color: white; padding: 12px 15px; border-radius: 15px; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .scanner-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 4px solid white; }
         
-        /* v7.5: 70% Transparent, Header-Sized Glass */
+        /* 5: 70% Transparent, Header-Sized Glass */
         #profile-card { 
             position: fixed; top: 12px; left: 50%; transform: translateX(-50%); 
             width: 92%; max-width: 470px; /* Matches dashboard-header scale */
-            background: rgba(255, 255, 255, 0.7) !important; 
+            background: rgba(255, 255, 255, 0.9) !important; 
             backdrop-filter: none !important; 
             -webkit-backdrop-filter: none !important;
             border-radius: 15px; padding: 18px; text-align: center; z-index: 10000; 
@@ -37,8 +37,12 @@
         #reader button { 
             background-color: var(--primary-purple) !important; 
             border-radius: 10px !important; 
-            font-size: 0.7rem !important; /* Smaller text for "T" fallback */
-            font-weight: bold !important;
+            color: white !important;
+            font-size: 0px !important; /* Smaller text for "T" fallback */
+            line-height: 0 !important;
+            padding: 10px !important;
+            min-width: 40px;
+            min-height: 40px;
         }
 
         #control-row { padding: 8px 12px; display: flex; gap: 8px; align-items: center; background: #fff; border-bottom: 1px solid #eee; }
@@ -46,8 +50,9 @@
         #btn-checkin { background: var(--primary-purple); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 0.8rem; padding: 0 15px; height: 38px; white-space: nowrap; }
 
         #extra-controls { display: flex; gap: 6px; }
-        #extra-controls button { width: 38px !important; height: 38px !important; border-radius: 50% !important; border: none !important; display: flex; align-items: center; justify-content: center; }
-
+        #extra-controls button, #reader button::after {
+        font-size: 1.1rem !important;
+        line-height: 1 !important;
         .count-circle { background: white; color: var(--primary-purple); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; }
     </style>
 </head>
@@ -68,7 +73,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <h4 class="fw-bold m-0" style="font-size: 1.05rem;">1st RCPH 2026</h4>
-                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v7.5</span>
+                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v7.6</span>
                 </div>
                 <div class="count-circle" id="total-count">?</div>
             </div>
@@ -179,7 +184,7 @@
     }
 
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
-        fps: 25, qrbox: { width: 260, height: 260 },
+        fps: 25, qrbox: { width: 300, height: 300 },
         supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
         rememberLastUsedCamera: true,
         showTorchButtonIfSupported: true 
@@ -193,16 +198,14 @@
         libButtons.forEach(btn => {
             const txt = btn.innerText.toUpperCase();
             if (txt.includes("STOP") || txt.includes("SCANNING")) {
-                btn.innerHTML = "📸"; btn.style.fontSize = "1.2rem"; btn.style.color = "white";
+                btn.innerHTML = "📸"; btn.style.fontSize = "1.2rem"; 
                 btn.style.backgroundColor = "#dc3545";
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             } 
             if (txt.includes("TORCH") || txt.includes("FLASH") || txt.includes("ON") || txt.includes("OFF")) {
-                // If 🔦 emoji doesn't stick, we use "T"
-                btn.innerHTML = "🔦"; 
-                if (btn.innerText === "🔦") { /* stays emoji */ } else { btn.innerText = "T"; }
-                
-                btn.style.fontSize = "1.2rem"; btn.style.color = "black";
+                btn.innerText = "T"; 
+                btn.style.fontSize = "1.1rem"; // This only affects the "T"
+                btn.style.color = "black";
                 btn.style.backgroundColor = "var(--accent-yellow)";
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             }
