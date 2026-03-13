@@ -147,7 +147,7 @@
     // 3) PIN appears immediately on load
     window.onload = function() {
         const SCANNER_PIN = "2026";
-        let userPin = prompt("Enter Marshall PIN to authorize scanner:");
+        let userPin = prompt("Enter security PIN to authorize scanner:");
         if (userPin !== SCANNER_PIN) {
             alert("Unauthorized! Page will reload.");
             location.reload();
