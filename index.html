@@ -8,59 +8,61 @@
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     
     <style>
-        :root { --primary-purple: #3b0a4d; }
+        :root { --primary-purple: #3b0a4d; --accent-yellow: #ffc107; }
         #reader img[alt="Info icon"] { display: none !important; }
 
         body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); height: 100vh; overflow: hidden; position: fixed; width: 100%; padding: 15px; font-family: 'Segoe UI', sans-serif; }
         .main-container { max-width: 500px; margin: auto; }
         
-        .dashboard-header { background: var(--primary-purple); color: white; padding: 12px 15px; border-radius: 15px; margin-bottom: 10px; }
-        .scanner-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 5px solid white; }
+        .dashboard-header { background: var(--primary-purple); color: white; padding: 12px 15px; border-radius: 15px; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .scanner-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 4px solid white; }
         
-        /* Glassmorphism - Transparent/Shadow Style */
+        /* The Aesthetic Message Background from your Reference */
         #profile-card { 
-            position: fixed; top: 10px; left: 50%; transform: translateX(-50%); 
-            width: 95%; max-width: 450px; 
-            background: rgba(255, 255, 255, 0.4) !important; /* Very Transparent */
-            backdrop-filter: blur(15px) !important; 
-            -webkit-backdrop-filter: blur(15px) !important;
-            border-radius: 15px; padding: 15px; text-align: center; z-index: 10000; 
+            position: fixed; top: 12px; left: 50%; transform: translateX(-50%); 
+            width: 92%; max-width: 440px; 
+            background: rgba(255, 255, 255, 0.7) !important;
+            backdrop-filter: blur(15px) saturate(180%) !important; 
+            -webkit-backdrop-filter: blur(15px) saturate(180%) !important;
+            border-radius: 18px; padding: 15px; text-align: center; z-index: 10000; 
             display: none; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important; 
-            border: 1px solid rgba(255,255,255,0.3) !important;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15) !important;
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
         }
 
-        #reader__video { height: 320px !important; object-fit: cover; width: 100% !important; border-radius: 10px; }
-        #reader { width: 100% !important; border: none !important; min-height: 250px; }
+        #reader__video { height: 360px !important; object-fit: cover; width: 100% !important; border-radius: 12px; }
+        #reader { width: 100% !important; border: none !important; }
 
-        #extra-controls { display: flex; gap: 8px; margin-left: auto; }
+        /* Unified Control Row */
+        #control-row { padding: 8px 12px; display: flex; gap: 8px; align-items: center; background: #fff; border-bottom: 1px solid #eee; }
+        #manualIdInput { flex-grow: 1; min-width: 0; height: 38px; border: 2px solid #e0e0e0; border-radius: 10px; padding: 0 10px; font-size: 0.85rem; outline: none; transition: border 0.2s; }
+        #manualIdInput:focus { border-color: var(--primary-purple); }
+        
+        #btn-checkin { 
+            background: var(--primary-purple); color: white; 
+            border: none; border-radius: 10px; font-weight: bold; font-size: 0.8rem; 
+            padding: 0 15px; height: 38px; white-space: nowrap; 
+        }
+
+        #extra-controls { display: flex; gap: 6px; }
         #extra-controls button {
-            width: 42px !important; height: 38px !important;
-            padding: 0 !important; border-radius: 8px !important;
-            border: none !important; font-size: 1.1rem !important;
-            color: white !important;
+            width: 38px !important; height: 38px !important;
+            border-radius: 50% !important; border: none !important;
             display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem !important; transition: transform 0.1s;
         }
 
+        /* Library Button Overrides */
         #reader button {
             background-color: var(--primary-purple) !important;
-            color: white !important;
-            border: none !important;
-            padding: 12px 24px !important;
-            border-radius: 10px !important;
-            font-weight: bold !important;
-            margin: 10px auto !important;
-            display: block !important;
+            color: white !important; border: none !important;
+            padding: 10px 20px !important; border-radius: 12px !important;
+            font-weight: 600 !important; margin: 15px auto !important;
+            display: block !important; box-shadow: 0 4px 10px rgba(59, 10, 77, 0.2);
         }
 
-        #manualIdInput {
-            flex: 2 !important; height: 38px !important;
-            border: 2px solid var(--primary-purple) !important;
-            border-radius: 8px !important; padding: 0 10px !important;
-        }
-
-        .count-circle { background: white; color: var(--primary-purple); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-        .btn-active-effect:active { opacity: 0.7; transform: scale(0.95); transition: 0.1s; }
+        .count-circle { background: white; color: var(--primary-purple); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; }
+        .btn-active-effect:active { transform: scale(0.92); }
     </style>
 </head>
 <body>
@@ -68,37 +70,37 @@
     <audio id="beepWarning" src="https://assets.mixkit.co/active_storage/sfx/1084/1084-preview.mp3" preload="auto"></audio>
 
     <div id="profile-card">
-        <div class="d-flex align-items-center justify-content-center">
-            <span id="scan-icon" style="font-size: 20px; margin-right: 10px;">✅</span>
-            <h5 id="p-name" class="fw-bold m-0" style="color: #000;">NAME HERE</h5>
+        <div class="d-flex align-items-center justify-content-center mb-1">
+            <span id="scan-icon" style="font-size: 20px; margin-right: 8px;"></span>
+            <h5 id="p-name" class="fw-bold m-0" style="color: #111; font-size: 1.1rem; letter-spacing: -0.3px;"></h5>
         </div>
-        <div id="p-msg" class="small mt-1 fw-bold" style="color: #222;">Ready...</div>
+        <div id="p-msg" class="fw-bold" style="color: #444; font-size: 0.85rem; line-height: 1.3;"></div>
     </div>
 
     <div class="main-container">
         <div class="dashboard-header">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
-                    <h4 class="fw-bold m-0" style="font-size: 1.1rem;">1st RCPH 2026</h4>
-                    <span class="badge bg-light text-dark" style="font-size: 0.6rem; opacity: 0.8;">v5.7</span>
+                    <h4 class="fw-bold m-0" style="font-size: 1.05rem;">1st RCPH 2026</h4>
+                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v5.9</span>
                 </div>
                 <div class="count-circle" id="total-count">?</div>
             </div>
             <div class="d-flex justify-content-between align-items-center mt-2">
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="modeSwitch" onchange="updateModeText()">
-                    <label class="form-check-label text-white small fw-bold" id="mode-text">Attendance Mode</label>
+                    <label class="form-check-label text-white small fw-bold" id="mode-text" style="font-size: 0.75rem;">Attendance Mode</label>
                 </div>
-                <div id="last-person-container" class="small text-end" style="font-size: 0.7rem; flex: 1; margin-left: 10px; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                <div id="last-person-container" class="small text-end" style="font-size: 0.7rem; flex: 1; margin-left: 10px; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 10px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
                     👤 <span id="last-person-name">Ready</span>
                 </div>
             </div>
         </div>
 
-        <div class="scanner-card shadow-sm">
-            <div id="control-row" style="padding: 8px; display: flex; gap: 5px; align-items: center; background: #fdfdfd; border-bottom: 1px solid #eee;">
-                <input type="text" id="manualIdInput" placeholder="ID (R001)">
-                <button onclick="handleManual()" class="btn-active-effect" style="flex: 1; background: var(--primary-purple); color: white; border: none; height: 38px; border-radius: 8px; font-weight: bold; font-size: 0.8rem; margin: 0 !important;">Check-In</button>
+        <div class="scanner-card">
+            <div id="control-row">
+                <input type="text" id="manualIdInput" placeholder="Enter ID...">
+                <button id="btn-checkin" onclick="handleManual()" class="btn-active-effect">Check-In</button>
                 <div id="extra-controls"></div>
             </div>
             <div id="reader"></div>
@@ -111,38 +113,42 @@
     function vibrate() { if (navigator.vibrate) navigator.vibrate(50); }
     function playSound(id) { document.getElementById(id).play().catch(()=>{}); }
 
-    window.onload = function() {
-        const pin = prompt("Enter security PIN:");
-        if (pin !== "umbi") { location.reload(); } else { syncCount(); }
-    };
-
     function syncCount() {
         fetch(`${GOOGLE_URL}?mode=sync&secret=RCPH2026`)
             .then(res => res.json())
             .then(res => { if (res.count !== undefined) document.getElementById('total-count').innerText = res.count; });
     }
 
+    window.onload = function() {
+        const pin = prompt("Security PIN:");
+        if (pin !== "umbi") { location.reload(); } else { syncCount(); }
+    };
+
     function updateModeText() {
         vibrate();
-        document.getElementById('mode-text').innerText = document.getElementById('modeSwitch').checked ? "Verification Mode" : "Attendance Mode";
+        const isVerify = document.getElementById('modeSwitch').checked;
+        document.getElementById('mode-text').innerText = isVerify ? "Verification Mode" : "Attendance Mode";
+        document.getElementById('btn-checkin').innerText = isVerify ? "Verify" : "Check-In";
     }
 
     function showNotification(title, message, icon, color, status) {
         const card = document.getElementById('profile-card');
-        card.style.display = "block";
-        card.style.borderBottom = `6px solid ${color} !important`;
-        document.getElementById('scan-icon').innerText = icon;
-        
         const isVerification = document.getElementById('modeSwitch').checked;
         
-        // Force fix for underscores and text requirements
+        // Remove existing icons from backend message string
+        let cleanMsg = message.replace(/✅|⚠️|❌/g, '').replace(/SUCCESS:|VERIFIED:|ALREADY CHECKED IN:|ALREADY VERIFIED:/gi, '').trim();
+        
         let displayTitle = title;
         if (status.includes("ALREADY")) {
             displayTitle = isVerification ? "ALREADY VERIFIED" : "ALREADY CHECKED-IN";
         }
 
+        document.getElementById('scan-icon').innerText = icon;
         document.getElementById('p-name').innerText = displayTitle;
-        document.getElementById('p-msg').innerText = message;
+        document.getElementById('p-msg').innerText = cleanMsg;
+        
+        card.style.borderBottom = `5px solid ${color}`;
+        card.style.display = "block";
         
         if(status === "SUCCESS") playSound('beepSuccess'); else playSound('beepWarning');
 
@@ -160,9 +166,10 @@
             .then(res => res.json())
             .then(res => {
                 if (res.count !== undefined) document.getElementById('total-count').innerText = res.count;
-                const nameStr = res.message.split('\n')[0];
-                // Kept as full name as requested
-                document.getElementById('last-person-name').innerText = nameStr.replace(/PUAN \| MRS\. |TUAN \| MR\. /g, '');
+                // Preserve full name
+                const nameStr = res.message.split('\n')[0].replace(/PUAN \| MRS\. |TUAN \| MR\. /g, '');
+                document.getElementById('last-person-name').innerText = nameStr;
+                
                 showNotification(res.status, res.message, res.status === "SUCCESS" ? "✅" : "⚠️", res.status === "SUCCESS" ? "#28a745" : "#ffc107", res.status);
             });
     }
@@ -174,36 +181,35 @@
     }
 
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
-        fps: 25, 
-        qrbox: { width: 280, height: 280 },
+        fps: 25, qrbox: { width: 260, height: 260 },
         supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
         rememberLastUsedCamera: true,
-        showTorchButtonIfSupported: true // Native library support
+        showTorchButtonIfSupported: true 
     });
     html5QrcodeScanner.render(onScanSuccess);
 
-    // Watch for library buttons
+    // Dynamic Control Integration (Torch & Camera Stop)
     setInterval(() => {
         const extraContainer = document.getElementById("extra-controls");
         const libButtons = document.querySelectorAll("#reader button");
         
         libButtons.forEach(btn => {
             const txt = btn.innerText.toUpperCase();
-            
             if (txt.includes("STOP")) {
-                btn.innerHTML = "📷ᳵ";
+                btn.innerHTML = "📸";
                 btn.style.backgroundColor = "#dc3545";
+                btn.classList.add('btn-active-effect');
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             } 
             if (txt.includes("TORCH") || txt.includes("FLASH")) {
                 btn.innerHTML = "🔦";
-                btn.style.backgroundColor = "#ffc107";
-                btn.style.color = "#212529";
-                btn.style.display = "flex";
+                btn.style.backgroundColor = "var(--accent-yellow)";
+                btn.style.color = "#000";
+                btn.classList.add('btn-active-effect');
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             }
         });
-    }, 1000);
+    }, 500);
     </script>
 </body>
 </html>
