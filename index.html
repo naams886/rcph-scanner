@@ -9,8 +9,9 @@
     
     <style>
         :root { --primary-purple: #3b0a4d; }
-        /* Hide library text links and CSR settings */
-        #reader__dashboard_section_csr, #reader__dashboard_section_swaplink { display: none !important; }
+        /* Hide library clutter but keep swap link active for the script */
+        #reader__dashboard_section_csr { display: none !important; }
+        #reader__dashboard_section_swaplink { opacity: 0; height: 0; overflow: hidden; }
 
         body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); height: 100vh; overflow: hidden; position: fixed; width: 100%; padding: 15px; font-family: 'Segoe UI', sans-serif; }
         .main-container { max-width: 500px; margin: auto; }
@@ -20,10 +21,8 @@
         #reader__video { height: 350px !important; object-fit: cover; width: 100% !important; }
         #reader { width: 100% !important; border: none !important; }
 
-        /* Dynamic Control Row */
+        /* Icon Button Styling */
         #extra-controls { display: flex; gap: 5px; flex: 0 0 auto; }
-        
-        /* Modern Button Styling for the top row icons */
         #extra-controls button {
             width: 42px !important; height: 38px !important;
             padding: 0 !important; border-radius: 8px !important;
@@ -32,7 +31,6 @@
             font-size: 1.1rem !important; position: relative !important;
             text-indent: -9999px !important; overflow: hidden !important;
         }
-
         #extra-controls button::after {
             text-indent: 0; position: absolute; width: 100%; height: 100%;
             display: flex; align-items: center; justify-content: center;
@@ -40,7 +38,6 @@
 
         .btn-stop { background-color: #dc3545 !important; }
         .btn-stop::after { content: "✕"; color: white; }
-        
         .btn-torch { background-color: #ffc107 !important; }
         .btn-torch::after { content: "🔦"; color: #212529; }
 
@@ -53,7 +50,6 @@
 
         .count-circle { background: white; color: var(--primary-purple); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
         
-        /* Vibration for feedback */
         @keyframes shake { 0% { transform: translate(0); } 25% { transform: translate(2px); } 50% { transform: translate(-2px); } 100% { transform: translate(0); } }
         .vibrate-tap:active { animation: shake 0.1s linear infinite; }
     </style>
@@ -63,7 +59,7 @@
         <div class="dashboard-header">
             <div class="d-flex justify-content-between align-items-center">
                 <h4 class="fw-bold m-0" style="font-size: 1.1rem;">1st RCPH 2026</h4>
-                <div style="font-size: 0.65rem; opacity: 0.6;">v4.2-STABLE</div>
+                <div style="font-size: 0.65rem; opacity: 0.6;">v4.3-STABLE</div>
             </div>
             <div class="d-flex justify-content-between align-items-end mt-1">
                 <div>
@@ -94,7 +90,7 @@
     // SECURITY PIN
     window.onload = function() {
         if (prompt("Enter security PIN:") !== "umbi") { 
-            document.body.innerHTML = "<h1>Access Denied</h1>"; 
+            document.body.innerHTML = "<h1 style='text-align:center; margin-top:50px;'>Access Denied</h1>"; 
         }
     };
 
@@ -117,15 +113,18 @@
     });
     html5QrcodeScanner.render((text) => console.log(text));
 
-    // RE-ARRANGE BUTTONS ONLY WHEN CAMERA IS ON
     const observer = new MutationObserver(() => {
         const extraContainer = document.getElementById("extra-controls");
         const libraryButtons = document.querySelectorAll("#reader button");
         
+        // AUTO-CLICK SWAP LINK: Forces back to camera if stuck in file mode
+        const swapLink = document.querySelector("#reader__dashboard_section_swaplink a");
+        if (swapLink && swapLink.innerText.toLowerCase().includes("camera")) {
+            swapLink.click();
+        }
+
         libraryButtons.forEach(btn => {
             const text = btn.innerText.toUpperCase();
-            
-            // We move STOP and TORCH buttons to the top row
             if (text.includes("STOP")) {
                 btn.className = "btn-stop vibrate-tap";
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
@@ -134,7 +133,6 @@
                 btn.className = "btn-torch vibrate-tap";
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             }
-            // START button stays in the middle of the reader as per default behavior
         });
     });
 
