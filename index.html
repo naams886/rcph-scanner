@@ -34,8 +34,8 @@
             color: var(--primary-purple);
             border: 2px solid white;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            width: 30px;
+            height: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -43,8 +43,29 @@
         }
 
         #total-count {
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: bold;
+        }
+
+        /* Smaller QR Background Box */
+        #reader {
+            border: none !important;
+        }
+        
+        /* Forces the video and the box to stay compact */
+        #reader__video { 
+            max-height: 180px !important; /* Shrunk from 250px */
+            object-fit: cover; 
+        }
+
+        /* Adjusting the main scanner card to be tighter */
+        .scanner-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 3px solid white;
+            max-height: 320px; /* Limits total height of the card */
         }
 
         #last-person-container {
@@ -80,7 +101,7 @@
                 </div>
             </div>
             <div class="text-end">
-                <div style="font-size: 0.65rem; opacity: 0.6; margin-bottom: 2px;">v2.2-GH</div>
+                <div style="font-size: 0.65rem; opacity: 0.6; margin-bottom: 2px;">v2.3-GH</div>
                 <div class="count-circle-container">
                     <div class="count-circle">
                         <div id="total-count">?</div>
@@ -111,7 +132,6 @@
     <audio id="beepWarning" src="https://assets.mixkit.co/active_storage/sfx/1084/1084-preview.mp3" preload="auto"></audio>
 
     <script>
-    // --- THE CRITICAL CHANGES START HERE ---
     const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbz-wC1kWKox_lqtGexP09BX46GDu-86OiuOljOguuCjTwLIopC0tMN3SpTX2U5ivRbW/exec";
     
     let lastScannedId = "";
@@ -123,6 +143,31 @@
     const pName = document.getElementById('p-name');
     const pMsg = document.getElementById('p-msg');
     const scanIcon = document.getElementById('scan-icon');
+
+    // 3) PIN appears immediately on load
+    window.onload = function() {
+        const SCANNER_PIN = "2026";
+        let userPin = prompt("Enter Marshall PIN to authorize scanner:");
+        if (userPin !== SCANNER_PIN) {
+            alert("Unauthorized! Page will reload.");
+            location.reload();
+        } else {
+            window.isAuthorized = true;
+            // Sync count immediately after login
+            syncCount();
+        }
+    };
+
+    function syncCount() {
+        // Fetches only the count from Google Sheets
+        fetch(`${GOOGLE_URL}?mode=sync&secret=RCPH2026`)
+            .then(res => res.json())
+            .then(res => {
+                if (res.count !== undefined) {
+                    document.getElementById('total-count').innerText = res.count;
+                }
+            });
+    }
 
     function showNotification(title, message, icon, color, autoHide = true) {
         if (window.hideTimeout) clearTimeout(window.hideTimeout);
@@ -144,63 +189,42 @@
         }
     }
 
-        // --- NEW onScanSuccess WITH PIN SECURITY ---
     function onScanSuccess(decodedText) {
-        const SCANNER_PIN = "2026"; // Change this to your preferred 4-digit code
-        
         const currentTime = Date.now();
         if (decodedText === lastScannedId && (currentTime - lastScanTime) < COOLDOWN_MS) return;
-    
-        // Ask for PIN if this is the first scan of the session
-        if (!window.isAuthorized) {
-            let userPin = prompt("Enter Marshall PIN to authorize scanner:");
-            if (userPin !== SCANNER_PIN) {
-                alert("Unauthorized! Incorrect PIN.");
-                return;
-            }
-            window.isAuthorized = true; // Remembers authorization until page is closed/refreshed
-        }
-    
+
         lastScannedId = decodedText;
         lastScanTime = currentTime;
-    
+
         html5QrcodeScanner.pause();
         showNotification("SENDING...", "To Google Sheets...", "⏳", "#3b0a4d", false);
-    
+
         const mode = modeSwitch.checked ? "verify" : "attendance";
-        // We add a 'secret' parameter to the URL
         const finalUrl = `${GOOGLE_URL}?qrContent=${encodeURIComponent(decodedText)}&mode=${mode}&secret=RCPH2026`;
-    
-        // Use 'cors' mode to ensure we can read the JSON response
+
         fetch(finalUrl, { mode: 'cors' })
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.json();
-            })
+            .then(response => response.json())
             .then(res => {
                 let sound, title, color, icon;
 
-                // 1. Update the Count
                 if (res.count !== undefined) {
                     document.getElementById('total-count').innerText = res.count;
                 }
 
-                // 2. Update Last Scanned Name (if successful or already scanned)
+                // Update Last Scanned Name label
                 if (res.message && res.status !== "ERROR") {
                     const nameContainer = document.getElementById('last-person-container');
                     const nameLabel = document.getElementById('last-person-name');
-                    nameLabel.innerText = res.message.split('\n')[0]; // Takes just the name
+                    nameLabel.innerText = res.message.split('\n')[0];
                     nameContainer.style.display = "inline-block";
                 }
 
-                // 3. Set Headers based on Status and Mode
                 if (res.status === "SUCCESS") {
                     title = modeSwitch.checked ? "VERIFIED" : "CONFIRMED";
                     color = "#28a745";
                     icon = "✅";
                     sound = document.getElementById(modeSwitch.checked ? 'beepVerify' : 'beepAttendance');
                 } else if (res.status === "ALREADY" || res.status === "ALREADY_VERIFIED") {
-                    // This creates your specific "Already Checked-In" header for attendance
                     title = modeSwitch.checked ? "ALREADY VERIFIED" : "ALREADY CHECKED-IN";
                     color = "#ffc107";
                     icon = "⚠️";
@@ -216,9 +240,7 @@
                 showNotification(title, res.message, icon, color, true);
             })
             .catch(err => {
-                console.error("Fetch Error:", err);
-                // If it fails, we still stop the 'Sending' notification so it doesn't stay stuck
-                showNotification("NETWORK ERROR", "Check internet or Script Deployment", "❌", "#dc3545", true);
+                showNotification("NETWORK ERROR", "Check internet", "❌", "#dc3545", true);
             });
     }
 
@@ -230,10 +252,9 @@
         }
     }
 
-    // Initialize Scanner
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
         fps: 20, 
-        qrbox: 250,
+        qrbox: 180, // Smaller scan box matches the visual height
         supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
     });
     html5QrcodeScanner.render(onScanSuccess);
