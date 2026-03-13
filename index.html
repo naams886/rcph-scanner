@@ -17,33 +17,39 @@
         .dashboard-header { background: var(--primary-purple); color: white; padding: 12px 15px; border-radius: 15px; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .scanner-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 4px solid white; }
         
-        /* v7.0: Glassmorphism Card with Dynamic Top Status Bar */
+        /* v7.3: The Transparent Floating Glass Window */
         #profile-card { 
-            background: rgba(255, 255, 255, 0.15) !important; /* Lowered from 0.4 to 0.15 */
-            backdrop-filter: blur(10px) !important; /* Soft blur for glass effect */
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        }
-
-        /* Force hide any text inside buttons within the reader */
-        #reader button {
-            font-size: 0 !important; /* Makes text disappear */
-        }
-        #reader button::before {
-            font-size: 1.2rem !important; /* Keeps our icons visible */
+            position: fixed; top: 15px; left: 50%; transform: translateX(-50%); 
+            width: 92%; max-width: 440px; 
+            background: rgba(255, 255, 255, 0.2) !important;
+            backdrop-filter: blur(15px) saturate(180%) !important; 
+            -webkit-backdrop-filter: blur(15px) saturate(180%) !important;
+            border-radius: 22px; padding: 20px; text-align: center; z-index: 10000; 
+            display: none; 
+            box-shadow: 0 15px 45px rgba(0,0,0,0.15) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            border-top: 8px solid transparent !important; /* Contextual color bar */
         }
 
         #reader__video { height: 360px !important; object-fit: cover; width: 100% !important; border-radius: 12px; }
         #reader { width: 100% !important; border: none !important; }
 
+        /* v7.3: Strict CSS to kill button text */
+        #reader button { 
+            font-size: 0px !important; /* Hide original text */
+            color: transparent !important;
+            background-color: var(--primary-purple) !important; 
+            border: none !important; border-radius: 12px !important; 
+            margin: 15px auto !important; 
+        }
+
         #control-row { padding: 8px 12px; display: flex; gap: 8px; align-items: center; background: #fff; border-bottom: 1px solid #eee; }
-        #manualIdInput { flex-grow: 1; min-width: 0; height: 38px; border: 2px solid #e0e0e0; border-radius: 10px; padding: 0 12px; font-size: 0.85rem; outline: none; cursor: pointer; }
+        #manualIdInput { flex-grow: 1; min-width: 0; height: 38px; border: 2px solid #e0e0e0; border-radius: 10px; padding: 0 12px; font-size: 0.85rem; outline: none; }
         #btn-checkin { background: var(--primary-purple); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 0.8rem; padding: 0 15px; height: 38px; white-space: nowrap; }
 
         #extra-controls { display: flex; gap: 6px; }
-        #extra-controls button { width: 38px !important; height: 38px !important; border-radius: 50% !important; border: none !important; display: flex; align-items: center; justify-content: center; font-size: 1.1rem !important; }
-        #reader button { background-color: var(--primary-purple) !important; color: white !important; border: none !important; padding: 10px 20px !important; border-radius: 12px !important; font-weight: 600 !important; margin: 15px auto !important; display: block !important; }
+        #extra-controls button { width: 38px !important; height: 38px !important; border-radius: 50% !important; border: none !important; display: flex; align-items: center; justify-content: center; font-size: 1.2rem !important; }
 
-        .count-circle-container { display: flex; align-items: center; gap: 5px; }
         .count-circle { background: white; color: var(--primary-purple); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; }
     </style>
 </head>
@@ -53,10 +59,10 @@
 
     <div id="profile-card">
         <div class="d-flex align-items-center justify-content-center mb-1">
-            <span id="scan-icon" style="font-size: 20px; margin-right: 8px;"></span>
-            <h5 id="p-name" class="fw-bold m-0" style="font-size: 1.15rem; letter-spacing: -0.5px;"></h5>
+            <span id="scan-icon" style="font-size: 24px; margin-right: 10px;"></span>
+            <h5 id="p-name" class="fw-bold m-0" style="font-size: 1.15rem; color: #000;"></h5>
         </div>
-        <div id="p-msg" class="mt-1 fw-bold" style="font-size: 0.9rem; line-height: 1.3;"></div>
+        <div id="p-msg" class="mt-2 fw-bold" style="color: #111; font-size: 0.95rem;"></div>
     </div>
 
     <div class="main-container">
@@ -64,12 +70,9 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <h4 class="fw-bold m-0" style="font-size: 1.05rem;">1st RCPH 2026</h4>
-                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v7.1</span>
+                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v7.3</span>
                 </div>
-                <div class="count-circle-container">
-                    <span class="small fw-bold" style="font-size: 0.6rem;">PRESENT</span>
-                    <div class="count-circle" id="total-count">?</div>
-                </div>
+                <div class="count-circle" id="total-count">?</div>
             </div>
             <div class="d-flex justify-content-between align-items-center mt-2">
                 <div class="form-check form-switch">
@@ -85,7 +88,7 @@
         <div class="scanner-card">
             <div id="control-row">
                 <input type="text" id="manualIdInput" placeholder="Tap to Enter ID..." autocomplete="off">
-                <button id="btn-checkin" onclick="handleManual()" class="btn-active-effect">Check-In</button>
+                <button id="btn-checkin" onclick="handleManual()">Check-In</button>
                 <div id="extra-controls"></div>
             </div>
             <div id="reader"></div>
@@ -118,35 +121,28 @@
 
     function showNotification(title, message, icon, color, status) {
         const card = document.getElementById('profile-card');
-        const iconSpan = document.getElementById('scan-icon');
-        const titleH5 = document.getElementById('p-name');
-        const msgDiv = document.getElementById('p-msg');
         
-        // Final Title Logic
-        let displayTitle = title;
-        if (title === "SUCCESS") displayTitle = "VERIFIED";
-        displayTitle = title.replace(/_/g, ' '); // Replaces all underscores with spaces
+        // Clean underscores and standardize labels
+        let displayTitle = title.split('_').join(' '); 
         if (displayTitle === "ALREADY") displayTitle = "ALREADY CHECKED-IN";
-        if (title === "ALREADY") displayTitle = "ALREADY CHECKED-IN";
+        if (displayTitle === "SUCCESS") displayTitle = "VERIFIED";
 
-        // Extract and clean guest name only
         let cleanName = message.split('\n')[0].replace(/✅|⚠️|❌|SUCCESS:|VERIFIED:|ALREADY CHECKED IN:|ALREADY VERIFIED:|CONFIRMED:|ERROR:|PUAN \| MRS\. |TUAN \| MR\. /gi, '').trim();
 
-        // 7.0 Dynamic Context Colors
-        iconSpan.innerText = icon;
-        titleH5.innerText = displayTitle;
-        msgDiv.innerText = cleanName;
+        document.getElementById('scan-icon').innerText = icon;
+        document.getElementById('p-name').innerText = displayTitle;
+        document.getElementById('p-msg').innerText = cleanName;
         
-        // Use defined colors
+        // Contextual Top-Bar colors
         if (status === "SUCCESS") {
-            titleH5.style.color = "var(--success-green)"; // Green title
-            card.style.borderTopColor = "var(--success-green)"; // Green top bar
+            document.getElementById('p-name').style.color = "var(--success-green)";
+            card.style.borderTopColor = "var(--success-green)";
         } else if (status.includes("ALREADY")) {
-            titleH5.style.color = "#111"; // Keep title black for contrast on yellow
-            card.style.borderTopColor = "var(--accent-yellow)"; // Yellow top bar
+            document.getElementById('p-name').style.color = "#856404";
+            card.style.borderTopColor = "var(--accent-yellow)";
         } else {
-            titleH5.style.color = "var(--danger-red)"; // Red title
-            card.style.borderTopColor = "var(--danger-red)"; // Red top bar
+            document.getElementById('p-name').style.color = "var(--danger-red)";
+            card.style.borderTopColor = "var(--danger-red)";
         }
 
         card.style.display = "block";
@@ -166,19 +162,12 @@
             .then(res => res.json())
             .then(res => {
                 if (res.count !== undefined) document.getElementById('total-count').innerText = res.count;
-                // HEADER CLEANUP: Remove icon and status prefixes
-                const cleanHeaderName = res.message.split('\n')[0]
-                    .replace(/✅|⚠️|❌|SUCCESS:|VERIFIED:|ALREADY CHECKED IN:|ALREADY VERIFIED:|CONFIRMED:|ERROR:|PUAN \| MRS\. |TUAN \| MR\. /gi, '')
-                    .trim();
+                const cleanHeaderName = res.message.split('\n')[0].replace(/✅|⚠️|❌|SUCCESS:|VERIFIED:|ALREADY CHECKED IN:|ALREADY VERIFIED:|CONFIRMED:|ERROR:|PUAN \| MRS\. |TUAN \| MR\. /gi, '').trim();
                 document.getElementById('last-person-name').innerText = cleanHeaderName;
                 
-                // Set context based on status
                 let icon = "✅"; let color = "var(--success-green)";
-                if (res.status.includes("ALREADY")) {
-                    icon = "⚠️"; color = "var(--accent-yellow)";
-                } else if (res.status === "ERROR") {
-                    icon = "❌"; color = "var(--danger-red)";
-                }
+                if (res.status.includes("ALREADY")) icon = "⚠️";
+                else if (res.status === "ERROR") icon = "❌";
 
                 showNotification(res.status, res.message, icon, color, res.status);
             });
@@ -198,25 +187,31 @@
     });
     html5QrcodeScanner.render(onScanSuccess);
 
-    // Keep Icons Stable
+    // v7.3: Aggressive Button Text Management
     setInterval(() => {
         const extraContainer = document.getElementById("extra-controls");
         const libButtons = document.querySelectorAll("#reader button");
-        
         libButtons.forEach(btn => {
             const txt = btn.innerText.toUpperCase();
+            
+            // Check for Stop Scanning Button
             if (txt.includes("STOP") || txt.includes("SCANNING")) {
-                btn.innerHTML = "📸";
+                btn.innerText = ""; // Clear text node
+                btn.innerHTML = "📸"; // Insert emoji
+                btn.style.fontSize = "1.2rem";
                 btn.style.backgroundColor = "#dc3545";
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             } 
-            if (txt.includes("TORCH") || txt.includes("FLASH") || txt.includes("SWITCH") || txt.includes("ON") || txt.includes("OFF")) {
-                btn.innerHTML = "🔦";
+            // Check for Torch/Flash Button
+            if (txt.includes("TORCH") || txt.includes("FLASH") || txt.includes("ON") || txt.includes("OFF")) {
+                btn.innerText = ""; // Clear text node
+                btn.innerHTML = "🔦"; // Insert emoji
+                btn.style.fontSize = "1.2rem";
                 btn.style.backgroundColor = "var(--accent-yellow)"; btn.style.color = "#000";
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             }
         });
-    }, 500);
+    }, 100); 
     </script>
 </body>
 </html>
