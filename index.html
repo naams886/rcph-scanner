@@ -17,22 +17,22 @@
         .dashboard-header { background: var(--primary-purple); color: white; padding: 12px 15px; border-radius: 15px; margin-bottom: 10px; }
         .scanner-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 5px solid white; }
         
-        /* Glassmorphism Profile Card */
+        /* Glassmorphism - Transparent/Shadow Style */
         #profile-card { 
             position: fixed; top: 10px; left: 50%; transform: translateX(-50%); 
             width: 95%; max-width: 450px; 
-            background: rgba(255, 255, 255, 0.85); /* Semi-transparent */
-            backdrop-filter: blur(10px); /* Frosted effect */
+            background: rgba(255, 255, 255, 0.4) !important; /* Very Transparent */
+            backdrop-filter: blur(15px) !important; 
+            -webkit-backdrop-filter: blur(15px) !important;
             border-radius: 15px; padding: 15px; text-align: center; z-index: 10000; 
             display: none; 
-            box-shadow: 0 8px 32px rgba(0,0,0,0.15); 
-            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important; 
+            border: 1px solid rgba(255,255,255,0.3) !important;
         }
 
         #reader__video { height: 320px !important; object-fit: cover; width: 100% !important; border-radius: 10px; }
         #reader { width: 100% !important; border: none !important; min-height: 250px; }
 
-        /* Extra Controls Positioning */
         #extra-controls { display: flex; gap: 8px; margin-left: auto; }
         #extra-controls button {
             width: 42px !important; height: 38px !important;
@@ -70,9 +70,9 @@
     <div id="profile-card">
         <div class="d-flex align-items-center justify-content-center">
             <span id="scan-icon" style="font-size: 20px; margin-right: 10px;">✅</span>
-            <h5 id="p-name" class="fw-bold m-0" style="letter-spacing: -0.5px;">NAME HERE</h5>
+            <h5 id="p-name" class="fw-bold m-0" style="color: #000;">NAME HERE</h5>
         </div>
-        <div id="p-msg" class="small mt-1" style="color: #444;">Ready...</div>
+        <div id="p-msg" class="small mt-1 fw-bold" style="color: #222;">Ready...</div>
     </div>
 
     <div class="main-container">
@@ -80,7 +80,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <h4 class="fw-bold m-0" style="font-size: 1.1rem;">1st RCPH 2026</h4>
-                    <span class="badge bg-light text-dark" style="font-size: 0.6rem; opacity: 0.8;">v5.6</span>
+                    <span class="badge bg-light text-dark" style="font-size: 0.6rem; opacity: 0.8;">v5.7</span>
                 </div>
                 <div class="count-circle" id="total-count">?</div>
             </div>
@@ -89,7 +89,7 @@
                     <input class="form-check-input" type="checkbox" id="modeSwitch" onchange="updateModeText()">
                     <label class="form-check-label text-white small fw-bold" id="mode-text">Attendance Mode</label>
                 </div>
-                <div id="last-person-container" class="small text-end" style="font-size: 0.75rem; flex: 1; margin-left: 10px; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                <div id="last-person-container" class="small text-end" style="font-size: 0.7rem; flex: 1; margin-left: 10px; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                     👤 <span id="last-person-name">Ready</span>
                 </div>
             </div>
@@ -127,25 +127,17 @@
         document.getElementById('mode-text').innerText = document.getElementById('modeSwitch').checked ? "Verification Mode" : "Attendance Mode";
     }
 
-    // Helper to shorten names
-    function shortenName(name) {
-        let clean = name.replace(/PUAN \| MRS\. |TUAN \| MR\. /g, '').trim();
-        let parts = clean.split(' ');
-        if (parts.length > 2) return `${parts[0]} ${parts[1]} ${parts[2][0]}.`;
-        return clean;
-    }
-
     function showNotification(title, message, icon, color, status) {
         const card = document.getElementById('profile-card');
         card.style.display = "block";
-        card.style.borderBottom = `6px solid ${color}`;
+        card.style.borderBottom = `6px solid ${color} !important`;
         document.getElementById('scan-icon').innerText = icon;
         
         const isVerification = document.getElementById('modeSwitch').checked;
-        let displayTitle = title;
         
-        // Fix for #1: Removing underscore
-        if (status === "ALREADY_SCANNED") {
+        // Force fix for underscores and text requirements
+        let displayTitle = title;
+        if (status.includes("ALREADY")) {
             displayTitle = isVerification ? "ALREADY VERIFIED" : "ALREADY CHECKED-IN";
         }
 
@@ -169,7 +161,8 @@
             .then(res => {
                 if (res.count !== undefined) document.getElementById('total-count').innerText = res.count;
                 const nameStr = res.message.split('\n')[0];
-                document.getElementById('last-person-name').innerText = shortenName(nameStr);
+                // Kept as full name as requested
+                document.getElementById('last-person-name').innerText = nameStr.replace(/PUAN \| MRS\. |TUAN \| MR\. /g, '');
                 showNotification(res.status, res.message, res.status === "SUCCESS" ? "✅" : "⚠️", res.status === "SUCCESS" ? "#28a745" : "#ffc107", res.status);
             });
     }
@@ -183,39 +176,34 @@
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
         fps: 25, 
         qrbox: { width: 280, height: 280 },
-        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
+        rememberLastUsedCamera: true,
+        showTorchButtonIfSupported: true // Native library support
     });
     html5QrcodeScanner.render(onScanSuccess);
 
-    // MutationObserver to catch library-generated buttons
-    const observer = new MutationObserver(() => {
+    // Watch for library buttons
+    setInterval(() => {
         const extraContainer = document.getElementById("extra-controls");
-        const buttons = document.querySelectorAll("#reader button");
+        const libButtons = document.querySelectorAll("#reader button");
         
-        buttons.forEach(btn => {
-            const text = btn.innerText.toUpperCase();
-            if (!btn.hasAttribute('data-vibrate-set')) {
-                btn.addEventListener('click', vibrate);
-                btn.setAttribute('data-vibrate-set', 'true');
-            }
-            btn.classList.add('btn-active-effect');
-
-            // Move Stop Button
-            if (text.includes("STOP")) {
+        libButtons.forEach(btn => {
+            const txt = btn.innerText.toUpperCase();
+            
+            if (txt.includes("STOP")) {
                 btn.innerHTML = "📷ᳵ";
                 btn.style.backgroundColor = "#dc3545";
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             } 
-            // Move/Create Torch Button
-            else if (text.includes("TORCH") || text.includes("FLASH")) {
+            if (txt.includes("TORCH") || txt.includes("FLASH")) {
                 btn.innerHTML = "🔦";
                 btn.style.backgroundColor = "#ffc107";
                 btn.style.color = "#212529";
+                btn.style.display = "flex";
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             }
         });
-    });
-    observer.observe(document.getElementById("reader"), { childList: true, subtree: true });
+    }, 1000);
     </script>
 </body>
 </html>
