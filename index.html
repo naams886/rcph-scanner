@@ -54,7 +54,7 @@
         
         /* Forces the video and the box to stay compact */
         #reader__video { 
-            max-height: 180px !important; /* Shrunk from 250px */
+            max-height: 350px !important; /* Shrunk from 250px */
             object-fit: cover; 
         }
 
@@ -65,7 +65,6 @@
             overflow: hidden;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             border: 3px solid white;
-            max-height: 320px; /* Limits total height of the card */
         }
 
         #last-person-container {
@@ -101,7 +100,7 @@
                 </div>
             </div>
             <div class="text-end">
-                <div style="font-size: 0.65rem; opacity: 0.6; margin-bottom: 2px;">v2.3-GH</div>
+                <div style="font-size: 0.65rem; opacity: 0.6; margin-bottom: 2px;">v2.4-GH</div>
                 <div class="count-circle-container">
                     <div class="count-circle">
                         <div id="total-count">?</div>
@@ -254,7 +253,7 @@
 
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
         fps: 20, 
-        qrbox: 180, // Smaller scan box matches the visual height
+        qrbox: { width: 280, height: 200 },
         supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
     });
     html5QrcodeScanner.render(onScanSuccess);
