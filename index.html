@@ -19,18 +19,17 @@
         
         /* v7.0: Glassmorphism Card with Dynamic Top Status Bar */
         #profile-card { 
-            position: fixed; top: 12px; left: 50%; transform: translateX(-50%); 
-            width: 92%; max-width: 440px; 
-            background: rgba(255, 255, 255, 0.4) !important;
-            backdrop-filter: blur(25px) saturate(180%) !important; 
-            -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
-            border-radius: 20px; padding: 18px 18px 15px 18px; text-align: center; z-index: 10000; 
-            display: none; 
-            box-shadow: 0 15px 45px rgba(0,0,0,0.15) !important;
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
-            
-            /* v7.0: Dynamic top-only border */
-            border-top: 8px solid transparent !important; /* Managed by JS */
+            background: rgba(255, 255, 255, 0.15) !important; /* Lowered from 0.4 to 0.15 */
+            backdrop-filter: blur(10px) !important; /* Soft blur for glass effect */
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+
+        /* Force hide any text inside buttons within the reader */
+        #reader button {
+            font-size: 0 !important; /* Makes text disappear */
+        }
+        #reader button::before {
+            font-size: 1.2rem !important; /* Keeps our icons visible */
         }
 
         #reader__video { height: 360px !important; object-fit: cover; width: 100% !important; border-radius: 12px; }
@@ -65,7 +64,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <h4 class="fw-bold m-0" style="font-size: 1.05rem;">1st RCPH 2026</h4>
-                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v7.0</span>
+                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v7.1</span>
                 </div>
                 <div class="count-circle-container">
                     <span class="small fw-bold" style="font-size: 0.6rem;">PRESENT</span>
@@ -126,7 +125,8 @@
         // Final Title Logic
         let displayTitle = title;
         if (title === "SUCCESS") displayTitle = "VERIFIED";
-        if (title.includes("ALREADY") && title.includes("VERIFY")) displayTitle = "ALREADY VERIFIED";
+        displayTitle = title.replace(/_/g, ' '); // Replaces all underscores with spaces
+        if (displayTitle === "ALREADY") displayTitle = "ALREADY CHECKED-IN";
         if (title === "ALREADY") displayTitle = "ALREADY CHECKED-IN";
 
         // Extract and clean guest name only
@@ -191,7 +191,7 @@
     }
 
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
-        fps: 25, qrbox: { width: 260, height: 260 },
+        fps: 25, qrbox: { width: 300, height: 300 },
         supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
         rememberLastUsedCamera: true,
         showTorchButtonIfSupported: true 
