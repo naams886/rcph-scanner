@@ -68,7 +68,7 @@
 
     <script>
     // --- THE CRITICAL CHANGES START HERE ---
-    const GOOGLE_URL = "https://script.google.com/a/macros/ukm.edu.my/s/AKfycbz-wC1kWKox_lqtGexP09BX46GDu-86OiuOljOguuCjTwLIopC0tMN3SpTX2U5ivRbW/exec";
+    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbz-wC1kWKox_lqtGexP09BX46GDu-86OiuOljOguuCjTwLIopC0tMN3SpTX2U5ivRbW/exec";
     
     let lastScannedId = "";
     let lastScanTime = 0;
@@ -127,15 +127,19 @@
         // We add a 'secret' parameter to the URL
         const finalUrl = `${GOOGLE_URL}?qrContent=${encodeURIComponent(decodedText)}&mode=${mode}&secret=RCPH2026`;
     
-        fetch(finalUrl)
-            .then(response => response.json())
+        // Use 'cors' mode to ensure we can read the JSON response
+        fetch(finalUrl, { mode: 'cors' })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
             .then(res => {
                 let sound, title, color, icon;
-                
+
+                // Update the count if provided
                 if (res.count !== undefined) {
                     document.getElementById('total-count').innerText = res.count;
                 }
-                // ------------------------------
 
                 if (res.status === "SUCCESS") {
                     title = modeSwitch.checked ? "VERIFIED" : "CONFIRMED";
@@ -144,7 +148,7 @@
                     sound = document.getElementById(modeSwitch.checked ? 'beepVerify' : 'beepAttendance');
                 } else if (res.status === "ALREADY" || res.status === "ALREADY_VERIFIED") {
                     title = "ALREADY SCANNED";
-                    color = "#ffc107"; // Yellow warning
+                    color = "#ffc107"; // Yellow
                     icon = "⚠️";
                     sound = document.getElementById('beepWarning');
                 } else {
@@ -157,6 +161,11 @@
                 if (sound) { sound.currentTime = 0; sound.play(); }
                 showNotification(title, res.message, icon, color, true);
             })
+            .catch(err => {
+                console.error("Fetch Error:", err);
+                // If it fails, we still stop the 'Sending' notification so it doesn't stay stuck
+                showNotification("NETWORK ERROR", "Check internet or Script Deployment", "❌", "#dc3545", true);
+            });
     }
 
     function processManualEntry() {
