@@ -131,7 +131,12 @@
             .then(response => response.json())
             .then(res => {
                 let sound, title, color, icon;
-    
+                
+                if (res.count !== undefined) {
+                    document.getElementById('total-count').innerText = res.count;
+                }
+                // ------------------------------
+
                 if (res.status === "SUCCESS") {
                     title = modeSwitch.checked ? "VERIFIED" : "CONFIRMED";
                     color = "#28a745";
@@ -139,7 +144,7 @@
                     sound = document.getElementById(modeSwitch.checked ? 'beepVerify' : 'beepAttendance');
                 } else if (res.status === "ALREADY" || res.status === "ALREADY_VERIFIED") {
                     title = "ALREADY SCANNED";
-                    color = "#ffc107";
+                    color = "#ffc107"; // Yellow warning
                     icon = "⚠️";
                     sound = document.getElementById('beepWarning');
                 } else {
@@ -148,14 +153,10 @@
                     icon = "❌";
                     sound = document.getElementById('beepWarning');
                 }
-    
+
                 if (sound) { sound.currentTime = 0; sound.play(); }
                 showNotification(title, res.message, icon, color, true);
             })
-            .catch(err => {
-                console.log("CORS/Network error");
-                showNotification("SENT", "Check Sheet for Status", "📩", "#3b0a4d", true);
-            });
     }
 
     function processManualEntry() {
