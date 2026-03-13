@@ -47,15 +47,16 @@
             font-weight: bold;
         }
 
-        /* Smaller QR Background Box */
-        #reader {
-            border: none !important;
-        }
-        
-        /* Forces the video and the box to stay compact */
+        /* Force the camera video to stay a specific size */
         #reader__video { 
-            height: 50px !important; 
+            height: 300px !important; 
             object-fit: cover; 
+        }
+
+        /* Clean up the camera container */
+        #reader {
+            width: 100% !important;
+            border: none !important;
         }
         
             #last-person-container {
@@ -91,7 +92,7 @@
                 </div>
             </div>
             <div class="text-end">
-                <div style="font-size: 0.65rem; opacity: 0.6; margin-bottom: 2px;">v2.8-GH</div>
+                <div style="font-size: 0.65rem; opacity: 0.6; margin-bottom: 2px;">v2.9-GH</div>
                 <div class="count-circle-container">
                     <div class="count-circle">
                         <div id="total-count">?</div>
@@ -109,11 +110,12 @@
         </div>
 
         <div class="scanner-card shadow-sm">
-            <div id="reader"></div>
-            <div style="padding: 10px; display: flex; gap: 5px;">
-                <input type="text" id="manualIdInput" placeholder="ID (R001)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
-                <button onclick="processManualEntry()" style="background: #3b0a4d; color: white; border: none; padding: 8px 15px; border-radius: 5px;">Check-In</button>
+            <div style="padding: 10px; display: flex; gap: 5px; border-bottom: 1px solid #eee; background: #fdfdfd;">
+                <input type="text" id="manualIdInput" placeholder="ID (R001)" style="flex: 1; padding: 10px; border: 2px solid var(--primary-purple); border-radius: 8px;">
+                <button onclick="processManualEntry()" style="background: var(--primary-purple); color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold;">Check-In</button>
             </div>
+
+            <div id="reader"></div>
         </div>
     </div>
 
@@ -244,7 +246,7 @@
 
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
         fps: 20, 
-        qrbox: { width: 200, height: 1250 },
+        qrbox: { width: 250, height: 150 },
         supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
     });
     html5QrcodeScanner.render(onScanSuccess);
