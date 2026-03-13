@@ -8,8 +8,8 @@
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     
     <style>
-        :root { --primary-purple: #3b0a4d; --accent-blue: #0dcaf0; }
-        /* Hide library clutter but keep the switch link functional behind the scenes */
+        :root { --primary-purple: #3b0a4d; }
+        /* Hide library text links and CSR settings */
         #reader__dashboard_section_csr, #reader__dashboard_section_swaplink { display: none !important; }
 
         body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); height: 100vh; overflow: hidden; position: fixed; width: 100%; padding: 15px; font-family: 'Segoe UI', sans-serif; }
@@ -17,30 +17,21 @@
         .dashboard-header { background: var(--primary-purple); color: white; padding: 12px 15px; border-radius: 15px; margin-bottom: 10px; }
         .scanner-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 5px solid white; }
         
-        #reader__video { height: 300px !important; object-fit: cover; width: 100% !important; }
+        #reader__video { height: 350px !important; object-fit: cover; width: 100% !important; }
         #reader { width: 100% !important; border: none !important; }
 
-        /* Icon Button Styling */
-        #extra-controls { display: flex; gap: 6px; flex: 0 0 auto; }
+        /* Dynamic Control Row */
+        #extra-controls { display: flex; gap: 5px; flex: 0 0 auto; }
+        
+        /* Modern Button Styling for the top row icons */
         #extra-controls button {
-            width: 40px !important; height: 38px !important;
+            width: 42px !important; height: 38px !important;
             padding: 0 !important; border-radius: 8px !important;
             border: none !important; display: flex !important;
             align-items: center !important; justify-content: center !important;
             font-size: 1.1rem !important; position: relative !important;
             text-indent: -9999px !important; overflow: hidden !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
         }
-
-        /* Visual Vibration Keyframes */
-        @keyframes visual-vibrate {
-            0% { transform: translate(0); }
-            25% { transform: translate(1px, 1px); }
-            50% { transform: translate(-1px, -1px); }
-            75% { transform: translate(1px, -1px); }
-            100% { transform: translate(0); }
-        }
-        .vibrate-tap:active { animation: visual-vibrate 0.1s linear infinite; }
 
         #extra-controls button::after {
             text-indent: 0; position: absolute; width: 100%; height: 100%;
@@ -50,30 +41,21 @@
         .btn-stop { background-color: #dc3545 !important; }
         .btn-stop::after { content: "✕"; color: white; }
         
-        .btn-start { background-color: #28a745 !important; }
-        .btn-start::after { content: "📷"; color: white; }
-        
         .btn-torch { background-color: #ffc107 !important; }
         .btn-torch::after { content: "🔦"; color: #212529; }
 
         #manualIdInput {
-            flex: 1.6 !important; 
+            flex: 1.5 !important;
             font-size: 0.95rem !important; padding: 0 10px !important;
             border: 2px solid var(--primary-purple) !important;
             border-radius: 8px !important; height: 38px !important;
         }
-        
-        /* Styled Image Upload Link */
-        #reader__dashboard_section_helper { padding: 10px; text-align: center; }
-        #reader__dashboard_section_helper span a {
-            color: var(--primary-purple) !important;
-            text-decoration: none !important;
-            font-weight: bold; font-size: 0.75rem;
-            background: #eee; padding: 5px 12px;
-            border-radius: 15px; display: inline-block;
-        }
 
         .count-circle { background: white; color: var(--primary-purple); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        
+        /* Vibration for feedback */
+        @keyframes shake { 0% { transform: translate(0); } 25% { transform: translate(2px); } 50% { transform: translate(-2px); } 100% { transform: translate(0); } }
+        .vibrate-tap:active { animation: shake 0.1s linear infinite; }
     </style>
 </head>
 <body>
@@ -81,13 +63,13 @@
         <div class="dashboard-header">
             <div class="d-flex justify-content-between align-items-center">
                 <h4 class="fw-bold m-0" style="font-size: 1.1rem;">1st RCPH 2026</h4>
-                <div style="font-size: 0.65rem; opacity: 0.6;">v4.1-GH</div>
+                <div style="font-size: 0.65rem; opacity: 0.6;">v4.2-STABLE</div>
             </div>
             <div class="d-flex justify-content-between align-items-end mt-1">
                 <div>
                     <p class="small m-0 opacity-75" id="mode-text" style="font-size: 0.7rem;">Attendance Mode</p>
                     <div class="form-check form-switch mt-1">
-                        <input class="form-check-input" type="checkbox" id="modeSwitch" onchange="updateModeText()" style="transform: scale(0.85); origin: left;">
+                        <input class="form-check-input" type="checkbox" id="modeSwitch" onchange="updateModeText()">
                         <label class="form-check-label ms-1 fw-bold" for="modeSwitch" style="font-size: 0.75rem;">Mode</label>
                     </div>
                 </div>
@@ -97,9 +79,9 @@
 
         <div class="scanner-card shadow-sm">
             <div id="control-row" style="padding: 8px; display: flex; gap: 5px; border-bottom: 1px solid #eee; background: #fdfdfd; align-items: center;">
-                <input type="text" id="manualIdInput" placeholder="ID (R001)" onclick="this.value=''">
-                <button onclick="triggerVibrate(); processManualEntry()" class="vibrate-tap" 
-                        style="flex: 1.4; background: var(--primary-purple); color: white; border: none; height: 38px; border-radius: 8px; font-weight: bold; font-size: 0.75rem; white-space: nowrap;">
+                <input type="text" id="manualIdInput" placeholder="ID (R001)">
+                <button onclick="vibrateDevice(); processManualEntry()" class="vibrate-tap" 
+                        style="flex: 1; background: var(--primary-purple); color: white; border: none; height: 38px; border-radius: 8px; font-weight: bold; font-size: 0.8rem; white-space: nowrap;">
                         Check-In
                 </button>
                 <div id="extra-controls"></div>
@@ -109,7 +91,14 @@
     </div>
 
     <script>
-    function triggerVibrate() { if (navigator.vibrate) { navigator.vibrate(40); } }
+    // SECURITY PIN
+    window.onload = function() {
+        if (prompt("Enter security PIN:") !== "umbi") { 
+            document.body.innerHTML = "<h1>Access Denied</h1>"; 
+        }
+    };
+
+    function vibrateDevice() { if (navigator.vibrate) navigator.vibrate(40); }
 
     function updateModeText() {
         document.getElementById('mode-text').innerText = document.getElementById('modeSwitch').checked ? "Verification Mode" : "Attendance Mode";
@@ -117,60 +106,35 @@
 
     function processManualEntry() {
         const input = document.getElementById('manualIdInput');
-        if (input.value.trim()) { alert("Processing: " + input.value.toUpperCase()); input.value = ""; }
+        if (input.value.trim()) { 
+            alert("ID processed: " + input.value.toUpperCase()); 
+            input.value = ""; 
+        }
     }
 
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
-        fps: 30, qrbox: { width: 300, height: 350 }, showTorchButtonIfSupported: true 
+        fps: 20, qrbox: { width: 250, height: 250 }, showTorchButtonIfSupported: true 
     });
     html5QrcodeScanner.render((text) => console.log(text));
 
+    // RE-ARRANGE BUTTONS ONLY WHEN CAMERA IS ON
     const observer = new MutationObserver(() => {
         const extraContainer = document.getElementById("extra-controls");
         const libraryButtons = document.querySelectorAll("#reader button");
         
-        // Handle image upload logic
-        const fileInput = document.querySelector('input[type="file"]');
-        if (fileInput && !fileInput.hasAttribute('capture')) {
-            fileInput.setAttribute('accept', 'image/*');
-            fileInput.setAttribute('capture', 'camera');
-        }
-
         libraryButtons.forEach(btn => {
             const text = btn.innerText.toUpperCase();
             
-            // 1. STOP Button (Red X)
+            // We move STOP and TORCH buttons to the top row
             if (text.includes("STOP")) {
                 btn.className = "btn-stop vibrate-tap";
-                if (!btn.hasAttribute('data-hooked')) {
-                    btn.addEventListener('click', () => {
-                        triggerVibrate();
-                        setTimeout(() => document.getElementById('manualIdInput').focus(), 250);
-                    });
-                    btn.setAttribute('data-hooked', 'true');
-                }
+                if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             } 
-            // 2. START Button (Green Camera)
-            else if (text.includes("START") || text.includes("RESUME") || text.includes("CAMERA")) {
-                btn.className = "btn-start vibrate-tap";
-                if (!btn.hasAttribute('data-hooked')) {
-                    btn.addEventListener('click', triggerVibrate);
-                    btn.setAttribute('data-hooked', 'true');
-                }
-            }
-            // 3. TORCH Button (Yellow Flash)
-            else if (text.includes("TORCH") || text.includes("FLASH") || text.includes("SWITCH")) {
+            else if (text.includes("TORCH") || text.includes("FLASH")) {
                 btn.className = "btn-torch vibrate-tap";
-                if (!btn.hasAttribute('data-hooked')) {
-                    btn.addEventListener('click', triggerVibrate);
-                    btn.setAttribute('data-hooked', 'true');
-                }
+                if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             }
-            
-            // ALWAYS Move found buttons to the top bar
-            if (btn.parentElement !== extraContainer) {
-                extraContainer.appendChild(btn);
-            }
+            // START button stays in the middle of the reader as per default behavior
         });
     });
 
