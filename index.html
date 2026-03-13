@@ -10,10 +10,17 @@
     <style>
         :root { --primary-purple: #3b0a4d; }
         
-        /* Hide all library links and file mode UI */
+        /* Hide library clutter without breaking the initial 'Start' flow */
         #reader__dashboard_section_csr, 
-        #reader__dashboard_section_swaplink,
-        #reader__dashboard_section_helper { display: none !important; }
+        #reader img[alt="Info icon"], 
+        #reader img[src*="data:image/svg+xml"] { display: none !important; }
+
+        /* Style the 'Scan an image file' link so it doesn't look like a mistake */
+        #reader__dashboard_section_swaplink { 
+            padding: 10px; 
+            font-size: 0.8rem; 
+            text-align: center;
+        }
 
         body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); height: 100vh; overflow: hidden; position: fixed; width: 100%; padding: 15px; font-family: 'Segoe UI', sans-serif; }
         .main-container { max-width: 500px; margin: auto; }
@@ -21,7 +28,7 @@
         .scanner-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 5px solid white; }
         
         #reader__video { height: 350px !important; object-fit: cover; width: 100% !important; }
-        #reader { width: 100% !important; border: none !important; }
+        #reader { width: 100% !important; border: none !important; padding: 10px 0 !important; }
 
         /* Icon Button Styling for Top Row */
         #extra-controls { display: flex; gap: 5px; flex: 0 0 auto; }
@@ -32,6 +39,7 @@
             align-items: center !important; justify-content: center !important;
             font-size: 1.1rem !important; position: relative !important;
             text-indent: -9999px !important; overflow: hidden !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
         }
         #extra-controls button::after {
             text-indent: 0; position: absolute; width: 100%; height: 100%;
@@ -42,6 +50,19 @@
         .btn-stop::after { content: "✕"; color: white; }
         .btn-torch { background-color: #ffc107 !important; }
         .btn-torch::after { content: "🔦"; color: #212529; }
+
+        /* Custom style for the Start Scanning button */
+        #reader button:not(.btn-stop):not(.btn-torch) {
+            background-color: var(--primary-purple) !important;
+            color: white !important;
+            border: none !important;
+            padding: 12px 24px !important;
+            border-radius: 10px !important;
+            font-weight: bold !important;
+            margin: 20px auto !important;
+            display: block !important;
+            box-shadow: 0 4px 12px rgba(59, 10, 77, 0.3);
+        }
 
         #manualIdInput {
             flex: 1.5 !important;
@@ -61,7 +82,7 @@
         <div class="dashboard-header">
             <div class="d-flex justify-content-between align-items-center">
                 <h4 class="fw-bold m-0" style="font-size: 1.1rem;">1st RCPH 2026</h4>
-                <div style="font-size: 0.65rem; opacity: 0.6;">v4.4-GH</div>
+                <div style="font-size: 0.65rem; opacity: 0.6;">v4.5-GH</div>
             </div>
             <div class="d-flex justify-content-between align-items-end mt-1">
                 <div>
@@ -89,7 +110,7 @@
     </div>
 
     <script>
-    // SECURITY PIN
+    // Security PIN check
     window.onload = function() {
         if (prompt("Enter security PIN:") !== "umbi") { 
             document.body.innerHTML = "<h1 style='text-align:center; margin-top:50px;'>Access Denied</h1>"; 
@@ -110,15 +131,15 @@
         }
     }
 
-    // Initialize Scanner - explicitly setting default to camera
+    // Default library initialization
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
-        fps: 20, 
+        fps: 25, 
         qrbox: { width: 250, height: 250 }, 
-        showTorchButtonIfSupported: true,
-        rememberLastUsedCamera: true
+        showTorchButtonIfSupported: true
     });
     html5QrcodeScanner.render((text) => console.log(text));
 
+    // Observe and move buttons once they appear
     const observer = new MutationObserver(() => {
         const extraContainer = document.getElementById("extra-controls");
         const libraryButtons = document.querySelectorAll("#reader button");
@@ -126,7 +147,6 @@
         libraryButtons.forEach(btn => {
             const text = btn.innerText.toUpperCase();
             
-            // Move only the specific camera-active controls to the top row
             if (text.includes("STOP")) {
                 btn.className = "btn-stop vibrate-tap";
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
@@ -135,7 +155,6 @@
                 btn.className = "btn-torch vibrate-tap";
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             }
-            // The "Start Scanning" button will stay in the reader div by default
         });
     });
 
