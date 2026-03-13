@@ -10,7 +10,7 @@
     <style>
         :root { --primary-purple: #3b0a4d; }
         
-        /* Remove library clutter & File Mode elements */
+        /* Remove library clutter */
         #reader__dashboard_section_csr, 
         #reader__dashboard_section_swaplink,
         #reader img[alt="Info icon"] { display: none !important; }
@@ -24,7 +24,7 @@
         #profile-card { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 450px; background: white; border-radius: 12px; padding: 12px; text-align: center; z-index: 10000; display: none; box-shadow: 0 4px 20px rgba(0,0,0,0.2); border-bottom: 6px solid #ddd; }
 
         #reader__video { height: 320px !important; object-fit: cover; width: 100% !important; }
-        #reader { width: 100% !important; border: none !important; }
+        #reader { width: 100% !important; border: none !important; min-height: 100px; }
 
         /* Top Row Controls */
         #extra-controls { display: flex; gap: 5px; }
@@ -35,8 +35,8 @@
             color: white !important;
         }
 
-        /* Centered Purple Start Button */
-        #reader button:not(.top-row-btn) {
+        /* The Purple Start Button */
+        .btn-start-custom {
             background-color: var(--primary-purple) !important;
             color: white !important;
             border: none !important;
@@ -45,6 +45,7 @@
             font-weight: bold !important;
             margin: 20px auto !important;
             display: block !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
         }
 
         #manualIdInput {
@@ -75,7 +76,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <h4 class="fw-bold m-0" style="font-size: 1.1rem;">1st RCPH 2026</h4>
-                    <span class="badge bg-light text-dark" style="font-size: 0.6rem; opacity: 0.8;">v5.0</span>
+                    <span class="badge bg-light text-dark" style="font-size: 0.6rem; opacity: 0.8;">v5.2</span>
                 </div>
                 <div class="count-circle" id="total-count">?</div>
             </div>
@@ -107,7 +108,8 @@
     function playSound(id) { document.getElementById(id).play().catch(()=>{}); }
 
     window.onload = function() {
-        if (prompt("Enter security PIN:") !== "umbi") { location.reload(); } else { syncCount(); }
+        const pin = prompt("Enter security PIN:");
+        if (pin !== "umbi") { location.reload(); } else { syncCount(); }
     };
 
     function syncCount() {
@@ -156,10 +158,12 @@
         if (input.value.trim()) { onScanSuccess(input.value.trim().toUpperCase()); input.value = ""; }
     }
 
+    // Config: Fixed to camera only
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
         fps: 25, 
         qrbox: { width: 280, height: 280 },
-        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
+        rememberLastUsedCamera: true
     });
     html5QrcodeScanner.render(onScanSuccess);
 
@@ -169,6 +173,8 @@
         
         buttons.forEach(btn => {
             const text = btn.innerText.toUpperCase();
+            
+            // Add vibration to everything
             if (!btn.hasAttribute('data-vibrate-set')) {
                 btn.addEventListener('click', vibrate);
                 btn.setAttribute('data-vibrate-set', 'true');
@@ -179,14 +185,18 @@
                 btn.innerHTML = "📷ᳵ";
                 btn.className = "top-row-btn btn-active-effect";
                 btn.style.backgroundColor = "#dc3545";
-                if (!extraContainer.contains(btn)) extraContainer.appendChild(btn);
+                if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             } 
             else if (text.includes("TORCH") || text.includes("FLASH")) {
                 btn.innerHTML = "🔦";
                 btn.className = "top-row-btn btn-active-effect";
                 btn.style.backgroundColor = "#ffc107";
                 btn.style.color = "#212529";
-                if (!extraContainer.contains(btn)) extraContainer.appendChild(btn);
+                if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
+            }
+            else if (text.includes("START") || text.includes("PERMISSION")) {
+                // Ensure the START button stays visible and purple
+                btn.className = "btn-start-custom btn-active-effect";
             }
         });
     });
