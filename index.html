@@ -9,8 +9,6 @@
     
     <style>
         :root { --primary-purple: #3b0a4d; }
-        
-        /* WE ARE NO LONGER HIDING DASHBOARD SECTIONS TO PREVENT DISAPPEARING BUTTONS */
         #reader img[alt="Info icon"] { display: none !important; }
 
         body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); height: 100vh; overflow: hidden; position: fixed; width: 100%; padding: 15px; font-family: 'Segoe UI', sans-serif; }
@@ -24,8 +22,8 @@
         #reader__video { height: 320px !important; object-fit: cover; width: 100% !important; border-radius: 10px; }
         #reader { width: 100% !important; border: none !important; min-height: 250px; }
 
-        /* Top Row Controls */
-        #extra-controls { display: flex; gap: 5px; }
+        /* Controls Row Styling */
+        #extra-controls { display: flex; gap: 8px; margin-left: auto; }
         #extra-controls button {
             width: 42px !important; height: 38px !important;
             padding: 0 !important; border-radius: 8px !important;
@@ -33,7 +31,6 @@
             color: white !important;
         }
 
-        /* Styling the Library's Default Buttons so they match your app */
         #reader button {
             background-color: var(--primary-purple) !important;
             color: white !important;
@@ -52,7 +49,6 @@
         }
 
         .count-circle { background: white; color: var(--primary-purple); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-        
         .btn-active-effect:active { opacity: 0.7; transform: scale(0.95); transition: 0.1s; }
     </style>
 </head>
@@ -73,17 +69,17 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <h4 class="fw-bold m-0" style="font-size: 1.1rem;">1st RCPH 2026</h4>
-                    <span class="badge bg-light text-dark" style="font-size: 0.6rem; opacity: 0.8;">v5.3</span>
+                    <span class="badge bg-light text-dark" style="font-size: 0.6rem; opacity: 0.8;">v5.4</span>
                 </div>
                 <div class="count-circle" id="total-count">?</div>
             </div>
-            <div class="d-flex justify-content-between align-items-end mt-2">
+            <div class="d-flex justify-content-between align-items-center mt-2">
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="modeSwitch" onchange="updateModeText()">
                     <label class="form-check-label text-white small fw-bold" id="mode-text">Attendance Mode</label>
                 </div>
-                <div id="last-person-container" class="small opacity-75" style="font-size: 0.65rem;">
-                    👤 <span id="last-person-name">None</span>
+                <div id="last-person-container" class="small text-end" style="font-size: 0.75rem; flex: 1; margin-left: 10px; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 10px; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    👤 <span id="last-person-name">Ready</span>
                 </div>
             </div>
         </div>
@@ -125,7 +121,15 @@
         card.style.display = "block";
         card.style.borderBottom = `6px solid ${color}`;
         document.getElementById('scan-icon').innerText = icon;
-        document.getElementById('p-name').innerText = title;
+        
+        // Custom Messaging logic based on status and mode
+        const isVerification = document.getElementById('modeSwitch').checked;
+        let displayTitle = title;
+        if (status === "ALREADY_SCANNED") {
+            displayTitle = isVerification ? "ALREADY VERIFIED" : "ALREADY CHECK-IN";
+        }
+
+        document.getElementById('p-name').innerText = displayTitle;
         document.getElementById('p-msg').innerText = message;
         
         if(status === "SUCCESS") playSound('beepSuccess'); else playSound('beepWarning');
@@ -144,7 +148,8 @@
             .then(res => res.json())
             .then(res => {
                 if (res.count !== undefined) document.getElementById('total-count').innerText = res.count;
-                document.getElementById('last-person-name').innerText = res.message.split('\n')[0];
+                const nameParts = res.message.split('\n');
+                document.getElementById('last-person-name').innerText = nameParts[0].replace('PUAN | MRS. ', '').replace('TUAN | MR. ', '');
                 showNotification(res.status, res.message, res.status === "SUCCESS" ? "✅" : "⚠️", res.status === "SUCCESS" ? "#28a745" : "#ffc107", res.status);
             });
     }
@@ -155,7 +160,6 @@
         if (input.value.trim()) { onScanSuccess(input.value.trim().toUpperCase()); input.value = ""; }
     }
 
-    // Initialize with default settings to ensure buttons appear
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
         fps: 25, 
         qrbox: { width: 280, height: 280 },
