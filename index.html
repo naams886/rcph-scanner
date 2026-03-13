@@ -9,40 +9,27 @@
     
     <style>
         :root { --primary-purple: #3b0a4d; --accent-blue: #0dcaf0; }
-        
         #reader__dashboard_section_csr, #reader__dashboard_section_swaplink { display: none !important; }
 
         body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); height: 100vh; overflow: hidden; position: fixed; width: 100%; padding: 15px; font-family: 'Segoe UI', sans-serif; }
         .main-container { max-width: 500px; margin: auto; }
-        
         .dashboard-header { background: var(--primary-purple); color: white; padding: 12px 15px; border-radius: 15px; margin-bottom: 10px; }
         .scanner-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 5px solid white; }
         
-        #profile-card { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 450px; background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 12px; text-align: center; z-index: 10000; display: none; box-shadow: 0 4px 20px rgba(0,0,0,0.2); border-bottom: 6px solid #ddd; animation: slideDown 0.4s ease-out; }
-        @keyframes slideDown { from { top: -100px; opacity: 0; } to { top: 10px; opacity: 1; } }
-
         #reader__video { height: 300px !important; object-fit: cover; width: 100% !important; }
         #reader { width: 100% !important; border: none !important; }
 
-        /* Icon Button Container */
-        #extra-controls { display: flex; gap: 5px; flex: 0 0 auto; }
-        
+        /* Icon Button Styling */
+        #extra-controls { display: flex; gap: 6px; flex: 0 0 auto; }
         #extra-controls button {
-            width: 40px !important;
-            height: 38px !important;
-            padding: 0 !important;
-            border-radius: 8px !important;
-            border: none !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            font-size: 1.1rem !important;
-            position: relative !important;
-            text-indent: -9999px !important; 
-            overflow: hidden !important;
+            width: 40px !important; height: 38px !important;
+            padding: 0 !important; border-radius: 8px !important;
+            border: none !important; display: flex !important;
+            align-items: center !important; justify-content: center !important;
+            font-size: 1.1rem !important; position: relative !important;
+            text-indent: -9999px !important; overflow: hidden !important;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
         }
-
         #extra-controls button::after {
             text-indent: 0; position: absolute; width: 100%; height: 100%;
             display: flex; align-items: center; justify-content: center;
@@ -50,45 +37,28 @@
 
         .btn-stop { background-color: #dc3545 !important; }
         .btn-stop::after { content: "✕"; color: white; }
-        
         .btn-start { background-color: #28a745 !important; }
         .btn-start::after { content: "📷"; color: white; }
-        
         .btn-torch { background-color: #ffc107 !important; }
         .btn-torch::after { content: "🔦"; color: #212529; }
 
         #manualIdInput {
-            flex: 2 !important; /* Reduced slightly to make room for button text */
-            font-size: 0.95rem !important;
-            padding: 0 10px !important;
+            flex: 1.8 !important; /* Balanced for typing and space */
+            font-size: 0.95rem !important; padding: 0 10px !important;
             border: 2px solid var(--primary-purple) !important;
-            border-radius: 8px !important;
-            height: 38px !important;
-            background-color: #ffffff !important;
+            border-radius: 8px !important; height: 38px !important;
         }
-
-        .count-circle-container { display: flex; flex-direction: column; align-items: center; }
-        .count-circle { background: white; color: var(--primary-purple); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; }
-        #total-count { font-size: 0.9rem; font-weight: bold; }
-        #last-person-container { margin-top: 5px; font-size: 0.7rem; background: rgba(255, 255, 255, 0.15); padding: 3px 10px; border-radius: 20px; display: none; }
+        
+        .count-circle { background: white; color: var(--primary-purple); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div id="profile-card">
-        <div class="d-flex align-items-center justify-content-center">
-            <span id="scan-icon" style="font-size: 20px; margin-right: 10px;">✅</span>
-            <h5 id="p-name" class="fw-bold m-0" style="font-size: 0.95rem; color: #333;">NAME HERE</h5>
-        </div>
-        <div id="p-msg" class="small fw-bold opacity-75 mt-1" style="color: #555;">Ready...</div>
-    </div>
-
     <div class="main-container">
         <div class="dashboard-header">
             <div class="d-flex justify-content-between align-items-center">
                 <h4 class="fw-bold m-0" style="font-size: 1.1rem;">1st RCPH 2026</h4>
-                <div style="font-size: 0.65rem; opacity: 0.6;">v3.7-GH</div>
+                <div style="font-size: 0.65rem; opacity: 0.6;">v3.8-GH</div>
             </div>
-
             <div class="d-flex justify-content-between align-items-end mt-1">
                 <div>
                     <p class="small m-0 opacity-75" id="mode-text" style="font-size: 0.7rem;">Attendance Mode</p>
@@ -97,23 +67,17 @@
                         <label class="form-check-label ms-1 fw-bold" for="modeSwitch" style="font-size: 0.75rem;">Mode</label>
                     </div>
                 </div>
-                <div class="count-circle-container">
-                    <div class="count-circle"><div id="total-count">?</div></div>
-                    <div style="font-size: 0.55rem; margin-top: 2px; font-weight: bold; text-transform: uppercase;">Present</div>
-                </div>
+                <div class="count-circle"><div id="total-count">?</div></div>
             </div>
-            <div id="last-person-container">👤 <span id="last-person-name">None</span></div>
         </div>
 
         <div class="scanner-card shadow-sm">
             <div id="control-row" style="padding: 8px; display: flex; gap: 5px; border-bottom: 1px solid #eee; background: #fdfdfd; align-items: center;">
                 <input type="text" id="manualIdInput" placeholder="ID (R001)" onclick="this.value=''">
-                
                 <button onclick="processManualEntry()" 
-                        style="flex: 1.4; background: var(--primary-purple); color: white; border: none; padding: 0 8px; height: 38px; border-radius: 8px; font-weight: bold; font-size: 0.8rem; white-space: nowrap;">
+                        style="flex: 1.5; background: var(--primary-purple); color: white; border: none; height: 38px; border-radius: 8px; font-weight: bold; font-size: 0.8rem; white-space: nowrap;">
                         Check-In
                 </button>
-
                 <div id="extra-controls"></div>
             </div>
             <div id="reader"></div>
@@ -122,78 +86,47 @@
 
     <script>
     const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbz-wC1kWKox_lqtGexP09BX46GDu-86OiuOljOguuCjTwLIopC0tMN3SpTX2U5ivRbW/exec";
-    let lastScannedId = "", lastScanTime = 0;
-    const COOLDOWN_MS = 5000;
-
+    
     function updateModeText() {
         document.getElementById('mode-text').innerText = document.getElementById('modeSwitch').checked ? "Verification Mode" : "Attendance Mode";
     }
 
-    window.onload = function() {
-        if (prompt("Enter security PIN:") !== "umbi") { location.reload(); } else { syncCount(); }
-    };
-
-    function syncCount() {
-        fetch(`${GOOGLE_URL}?mode=sync&secret=RCPH2026`).then(res => res.json()).then(res => { 
-            if (res.count !== undefined) document.getElementById('total-count').innerText = res.count; 
-        });
-    }
-
-    function onScanSuccess(decodedText) {
-        const currentTime = Date.now();
-        if (decodedText === lastScannedId && (currentTime - lastScanTime) < COOLDOWN_MS) return;
-        lastScannedId = decodedText; lastScanTime = currentTime;
-        html5QrcodeScanner.pause();
-        
-        const mode = document.getElementById('modeSwitch').checked ? "verify" : "attendance";
-        fetch(`${GOOGLE_URL}?qrContent=${encodeURIComponent(decodedText)}&mode=${mode}&secret=RCPH2026`)
-            .then(res => res.json())
-            .then(res => {
-                if (res.count !== undefined) document.getElementById('total-count').innerText = res.count;
-                html5QrcodeScanner.resume();
-            });
-    }
-
     function processManualEntry() {
         const input = document.getElementById('manualIdInput');
-        if (input.value.trim()) { onScanSuccess(input.value.trim().toUpperCase()); input.value = ""; }
+        if (input.value.trim()) { alert("Processing: " + input.value.toUpperCase()); input.value = ""; }
     }
 
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
         fps: 30, qrbox: { width: 300, height: 350 }, showTorchButtonIfSupported: true 
     });
-    html5QrcodeScanner.render(onScanSuccess);
+    html5QrcodeScanner.render((text) => console.log(text));
 
+    // REFINED OBSERVER LOGIC
     const observer = new MutationObserver(() => {
         const extraContainer = document.getElementById("extra-controls");
-        const buttons = document.querySelectorAll("#reader button");
+        const libraryButtons = document.querySelectorAll("#reader button");
         
-        buttons.forEach(btn => {
+        libraryButtons.forEach(btn => {
             const text = btn.innerText.toUpperCase();
             
             if (text.includes("STOP")) {
                 btn.className = "btn-stop";
-                // Clear Start button if it exists to keep only one
-                const oldStart = document.querySelector('.btn-start');
-                if(oldStart) oldStart.remove();
-
-                btn.onclick = () => { 
-                    btn.click(); // Original logic
-                    setTimeout(() => document.getElementById('manualIdInput').focus(), 150); 
-                };
-                if (!extraContainer.contains(btn)) extraContainer.appendChild(btn);
+                // Auto-focus on stop
+                if (!btn.hasAttribute('data-hooked')) {
+                    btn.addEventListener('click', () => {
+                        setTimeout(() => document.getElementById('manualIdInput').focus(), 200);
+                    });
+                    btn.setAttribute('data-hooked', 'true');
+                }
+                extraContainer.appendChild(btn);
             } 
             else if (text.includes("START") || text.includes("RESUME")) {
                 btn.className = "btn-start";
-                // Clear Stop button if it exists
-                const oldStop = document.querySelector('.btn-stop');
-                if(oldStop) oldStop.remove();
-
-                if (!extraContainer.contains(btn)) extraContainer.appendChild(btn);
+                extraContainer.appendChild(btn);
             }
             else if (text.includes("TORCH") || text.includes("FLASH") || text.includes("SWITCH")) {
                 btn.className = "btn-torch";
-                if (!extraContainer.contains(btn)) extraContainer.appendChild(btn);
+                extraContainer.appendChild(btn);
             }
         });
     });
