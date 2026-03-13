@@ -29,15 +29,24 @@
 
         /* Style for moved buttons (Stop & Flashlight) */
         #extra-controls button {
-            height: 36px !important;
+            width: 40px !important; /* Slightly wider for tap-ability */
+            height: 38px !important;
+            transition: background-color 0.3s ease;
+        }
+
+        #manualIdInput {
+            flex: 2.5 !important;
+            font-size: 1rem !important; /* Larger text for typing */
             padding: 0 12px !important;
+            border: 2px solid var(--primary-purple) !important;
             border-radius: 8px !important;
-            font-size: 0.7rem !important;
-            font-weight: bold !important;
-            border: none !important;
-            margin: 0 !important;
-            color: white !important;
-            text-transform: uppercase !important;
+            height: 38px !important;
+            background-color: #ffffff !important;
+        }
+        
+        #manualIdInput::placeholder {
+            font-size: 0.85rem;
+            opacity: 0.6;
         }
 
         /* Specific colors for moved buttons */
@@ -64,7 +73,7 @@
         <div class="dashboard-header">
             <div class="d-flex justify-content-between align-items-center">
                 <h4 class="fw-bold m-0" style="font-size: 1.1rem;">1st RCPH 2026</h4>
-                <div style="font-size: 0.65rem; opacity: 0.6;">v3.1-GH</div>
+                <div style="font-size: 0.65rem; opacity: 0.6;">v3.2-GH</div>
             </div>
 
             <div class="d-flex justify-content-between align-items-end mt-1">
@@ -89,16 +98,16 @@
         </div>
 
         <div class="scanner-card shadow-sm">
-            <div id="control-row" style="padding: 8px; display: flex; gap: 4px; border-bottom: 1px solid #eee; background: #fdfdfd; align-items: center;">
+            <div id="control-row" style="padding: 8px; display: flex; gap: 5px; border-bottom: 1px solid #eee; background: #fdfdfd; align-items: center;">
                 <input type="text" id="manualIdInput" placeholder="ID (R001)" 
-                       style="flex: 1; min-width: 0; padding: 6px; border: 2px solid var(--primary-purple); border-radius: 8px; font-size: 0.8rem; height: 36px;">
+                       style="flex: 2.5; min-width: 0; padding: 6px 12px; border: 2px solid var(--primary-purple); border-radius: 8px; font-size: 0.9.5rem; height: 38px;">
                 
                 <button onclick="processManualEntry()" 
-                        style="background: var(--primary-purple); color: white; border: none; padding: 0 10px; height: 36px; border-radius: 8px; font-weight: bold; font-size: 0.7rem; white-space: nowrap;">
+                        style="flex: 1.2; background: var(--primary-purple); color: white; border: none; padding: 0 5px; height: 38px; border-radius: 8px; font-weight: bold; font-size: 0.75rem; white-space: nowrap;">
                         Check-In
                 </button>
 
-                <div id="extra-controls" style="display: flex; gap: 4px;"></div>
+                <div id="extra-controls" style="display: flex; gap: 5px; flex: 0 0 auto;"></div>
             </div>
 
             <div id="reader"></div>
@@ -188,16 +197,35 @@
 
     // Observer to move Flashlight and Stop buttons to the top row
     const observer = new MutationObserver(() => {
-        const extraContainer = document.getElementById("extra-controls");
-        const buttons = document.querySelectorAll("#reader button");
-        buttons.forEach(btn => {
-            const text = btn.innerText.toUpperCase();
-            if (text.includes("STOP") || text.includes("TORCH") || text.includes("FLASH")) {
-                if (!extraContainer.contains(btn)) extraContainer.appendChild(btn);
-            }
-        });
+    const extraContainer = document.getElementById("extra-controls");
+    const buttons = document.querySelectorAll("#reader button");
+    
+    buttons.forEach(btn => {
+        const text = btn.innerText.toUpperCase();
+        
+        // 1. Handle STOP Button (Camera running)
+        if (text.includes("STOP")) {
+            btn.innerHTML = "📷ᳵ"; // Power icon for stopping
+            btn.style.backgroundColor = "#dc3545"; // Red
+            if (!extraContainer.contains(btn)) extraContainer.appendChild(btn);
+        } 
+        
+        // 2. Handle START Button (Camera stopped)
+        else if (text.includes("START") || text.includes("RESUME")) {
+            btn.innerHTML = "📷"; // Camera icon to start again
+            btn.style.backgroundColor = "#28a745"; // Green
+            if (!extraContainer.contains(btn)) extraContainer.appendChild(btn);
+        }
+
+        // 3. Handle TORCH Button
+        else if (text.includes("TORCH") || text.includes("FLASH") || text.includes("SWITCH ON")) {
+            btn.innerHTML = "🔦";
+            if (!extraContainer.contains(btn)) extraContainer.appendChild(btn);
+        }
     });
-    observer.observe(document.getElementById("reader"), { childList: true, subtree: true });
+});
+
+observer.observe(document.getElementById("reader"), { childList: true, subtree: true });
     </script>
 </body>
 </html>
