@@ -9,6 +9,7 @@
     
     <style>
         :root { --primary-purple: #3b0a4d; --accent-blue: #0dcaf0; }
+        /* Hide library clutter but keep the switch link functional behind the scenes */
         #reader__dashboard_section_csr, #reader__dashboard_section_swaplink { display: none !important; }
 
         body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); height: 100vh; overflow: hidden; position: fixed; width: 100%; padding: 15px; font-family: 'Segoe UI', sans-serif; }
@@ -34,15 +35,12 @@
         /* Visual Vibration Keyframes */
         @keyframes visual-vibrate {
             0% { transform: translate(0); }
-            25% { transform: translate(2px, 2px); }
-            50% { transform: translate(-2px, -2px); }
-            75% { transform: translate(2px, -2px); }
+            25% { transform: translate(1px, 1px); }
+            50% { transform: translate(-1px, -1px); }
+            75% { transform: translate(1px, -1px); }
             100% { transform: translate(0); }
         }
-
-        .vibrate-tap:active {
-            animation: visual-vibrate 0.1s linear infinite;
-        }
+        .vibrate-tap:active { animation: visual-vibrate 0.1s linear infinite; }
 
         #extra-controls button::after {
             text-indent: 0; position: absolute; width: 100%; height: 100%;
@@ -51,13 +49,15 @@
 
         .btn-stop { background-color: #dc3545 !important; }
         .btn-stop::after { content: "✕"; color: white; }
+        
         .btn-start { background-color: #28a745 !important; }
         .btn-start::after { content: "📷"; color: white; }
+        
         .btn-torch { background-color: #ffc107 !important; }
         .btn-torch::after { content: "🔦"; color: #212529; }
 
         #manualIdInput {
-            flex: 1.8 !important; 
+            flex: 1.6 !important; 
             font-size: 0.95rem !important; padding: 0 10px !important;
             border: 2px solid var(--primary-purple) !important;
             border-radius: 8px !important; height: 38px !important;
@@ -68,12 +68,9 @@
         #reader__dashboard_section_helper span a {
             color: var(--primary-purple) !important;
             text-decoration: none !important;
-            font-weight: bold;
-            font-size: 0.8rem;
-            background: #eee;
-            padding: 5px 15px;
-            border-radius: 20px;
-            display: inline-block;
+            font-weight: bold; font-size: 0.75rem;
+            background: #eee; padding: 5px 12px;
+            border-radius: 15px; display: inline-block;
         }
 
         .count-circle { background: white; color: var(--primary-purple); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
@@ -84,7 +81,7 @@
         <div class="dashboard-header">
             <div class="d-flex justify-content-between align-items-center">
                 <h4 class="fw-bold m-0" style="font-size: 1.1rem;">1st RCPH 2026</h4>
-                <div style="font-size: 0.65rem; opacity: 0.6;">v4.0-GH</div>
+                <div style="font-size: 0.65rem; opacity: 0.6;">v4.1-GH</div>
             </div>
             <div class="d-flex justify-content-between align-items-end mt-1">
                 <div>
@@ -102,7 +99,7 @@
             <div id="control-row" style="padding: 8px; display: flex; gap: 5px; border-bottom: 1px solid #eee; background: #fdfdfd; align-items: center;">
                 <input type="text" id="manualIdInput" placeholder="ID (R001)" onclick="this.value=''">
                 <button onclick="triggerVibrate(); processManualEntry()" class="vibrate-tap" 
-                        style="flex: 1.5; background: var(--primary-purple); color: white; border: none; height: 38px; border-radius: 8px; font-weight: bold; font-size: 0.8rem; white-space: nowrap;">
+                        style="flex: 1.4; background: var(--primary-purple); color: white; border: none; height: 38px; border-radius: 8px; font-weight: bold; font-size: 0.75rem; white-space: nowrap;">
                         Check-In
                 </button>
                 <div id="extra-controls"></div>
@@ -112,10 +109,7 @@
     </div>
 
     <script>
-    // Trigger physical vibration motor (Android)
-    function triggerVibrate() {
-        if (navigator.vibrate) { navigator.vibrate(40); }
-    }
+    function triggerVibrate() { if (navigator.vibrate) { navigator.vibrate(40); } }
 
     function updateModeText() {
         document.getElementById('mode-text').innerText = document.getElementById('modeSwitch').checked ? "Verification Mode" : "Attendance Mode";
@@ -135,6 +129,7 @@
         const extraContainer = document.getElementById("extra-controls");
         const libraryButtons = document.querySelectorAll("#reader button");
         
+        // Handle image upload logic
         const fileInput = document.querySelector('input[type="file"]');
         if (fileInput && !fileInput.hasAttribute('capture')) {
             fileInput.setAttribute('accept', 'image/*');
@@ -143,8 +138,8 @@
 
         libraryButtons.forEach(btn => {
             const text = btn.innerText.toUpperCase();
-            btn.classList.add('vibrate-tap'); // Adds visual vibration to all library buttons
             
+            // 1. STOP Button (Red X)
             if (text.includes("STOP")) {
                 btn.className = "btn-stop vibrate-tap";
                 if (!btn.hasAttribute('data-hooked')) {
@@ -154,17 +149,27 @@
                     });
                     btn.setAttribute('data-hooked', 'true');
                 }
-                if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             } 
-            else if (text.includes("START") || text.includes("RESUME")) {
+            // 2. START Button (Green Camera)
+            else if (text.includes("START") || text.includes("RESUME") || text.includes("CAMERA")) {
                 btn.className = "btn-start vibrate-tap";
-                btn.addEventListener('click', triggerVibrate);
-                if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
+                if (!btn.hasAttribute('data-hooked')) {
+                    btn.addEventListener('click', triggerVibrate);
+                    btn.setAttribute('data-hooked', 'true');
+                }
             }
+            // 3. TORCH Button (Yellow Flash)
             else if (text.includes("TORCH") || text.includes("FLASH") || text.includes("SWITCH")) {
                 btn.className = "btn-torch vibrate-tap";
-                btn.addEventListener('click', triggerVibrate);
-                if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
+                if (!btn.hasAttribute('data-hooked')) {
+                    btn.addEventListener('click', triggerVibrate);
+                    btn.setAttribute('data-hooked', 'true');
+                }
+            }
+            
+            // ALWAYS Move found buttons to the top bar
+            if (btn.parentElement !== extraContainer) {
+                extraContainer.appendChild(btn);
             }
         });
     });
