@@ -30,6 +30,20 @@
             text-indent: -9999px !important; overflow: hidden !important;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
         }
+
+        /* Visual Vibration Keyframes */
+        @keyframes visual-vibrate {
+            0% { transform: translate(0); }
+            25% { transform: translate(2px, 2px); }
+            50% { transform: translate(-2px, -2px); }
+            75% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        .vibrate-tap:active {
+            animation: visual-vibrate 0.1s linear infinite;
+        }
+
         #extra-controls button::after {
             text-indent: 0; position: absolute; width: 100%; height: 100%;
             display: flex; align-items: center; justify-content: center;
@@ -43,12 +57,25 @@
         .btn-torch::after { content: "🔦"; color: #212529; }
 
         #manualIdInput {
-            flex: 1.8 !important; /* Balanced for typing and space */
+            flex: 1.8 !important; 
             font-size: 0.95rem !important; padding: 0 10px !important;
             border: 2px solid var(--primary-purple) !important;
             border-radius: 8px !important; height: 38px !important;
         }
         
+        /* Styled Image Upload Link */
+        #reader__dashboard_section_helper { padding: 10px; text-align: center; }
+        #reader__dashboard_section_helper span a {
+            color: var(--primary-purple) !important;
+            text-decoration: none !important;
+            font-weight: bold;
+            font-size: 0.8rem;
+            background: #eee;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
         .count-circle { background: white; color: var(--primary-purple); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
     </style>
 </head>
@@ -57,7 +84,7 @@
         <div class="dashboard-header">
             <div class="d-flex justify-content-between align-items-center">
                 <h4 class="fw-bold m-0" style="font-size: 1.1rem;">1st RCPH 2026</h4>
-                <div style="font-size: 0.65rem; opacity: 0.6;">v3.8-GH</div>
+                <div style="font-size: 0.65rem; opacity: 0.6;">v4.0-GH</div>
             </div>
             <div class="d-flex justify-content-between align-items-end mt-1">
                 <div>
@@ -74,7 +101,7 @@
         <div class="scanner-card shadow-sm">
             <div id="control-row" style="padding: 8px; display: flex; gap: 5px; border-bottom: 1px solid #eee; background: #fdfdfd; align-items: center;">
                 <input type="text" id="manualIdInput" placeholder="ID (R001)" onclick="this.value=''">
-                <button onclick="processManualEntry()" 
+                <button onclick="triggerVibrate(); processManualEntry()" class="vibrate-tap" 
                         style="flex: 1.5; background: var(--primary-purple); color: white; border: none; height: 38px; border-radius: 8px; font-weight: bold; font-size: 0.8rem; white-space: nowrap;">
                         Check-In
                 </button>
@@ -85,8 +112,11 @@
     </div>
 
     <script>
-    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbz-wC1kWKox_lqtGexP09BX46GDu-86OiuOljOguuCjTwLIopC0tMN3SpTX2U5ivRbW/exec";
-    
+    // Trigger physical vibration motor (Android)
+    function triggerVibrate() {
+        if (navigator.vibrate) { navigator.vibrate(40); }
+    }
+
     function updateModeText() {
         document.getElementById('mode-text').innerText = document.getElementById('modeSwitch').checked ? "Verification Mode" : "Attendance Mode";
     }
@@ -101,32 +131,40 @@
     });
     html5QrcodeScanner.render((text) => console.log(text));
 
-    // REFINED OBSERVER LOGIC
     const observer = new MutationObserver(() => {
         const extraContainer = document.getElementById("extra-controls");
         const libraryButtons = document.querySelectorAll("#reader button");
         
+        const fileInput = document.querySelector('input[type="file"]');
+        if (fileInput && !fileInput.hasAttribute('capture')) {
+            fileInput.setAttribute('accept', 'image/*');
+            fileInput.setAttribute('capture', 'camera');
+        }
+
         libraryButtons.forEach(btn => {
             const text = btn.innerText.toUpperCase();
+            btn.classList.add('vibrate-tap'); // Adds visual vibration to all library buttons
             
             if (text.includes("STOP")) {
-                btn.className = "btn-stop";
-                // Auto-focus on stop
+                btn.className = "btn-stop vibrate-tap";
                 if (!btn.hasAttribute('data-hooked')) {
                     btn.addEventListener('click', () => {
-                        setTimeout(() => document.getElementById('manualIdInput').focus(), 200);
+                        triggerVibrate();
+                        setTimeout(() => document.getElementById('manualIdInput').focus(), 250);
                     });
                     btn.setAttribute('data-hooked', 'true');
                 }
-                extraContainer.appendChild(btn);
+                if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             } 
             else if (text.includes("START") || text.includes("RESUME")) {
-                btn.className = "btn-start";
-                extraContainer.appendChild(btn);
+                btn.className = "btn-start vibrate-tap";
+                btn.addEventListener('click', triggerVibrate);
+                if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             }
             else if (text.includes("TORCH") || text.includes("FLASH") || text.includes("SWITCH")) {
-                btn.className = "btn-torch";
-                extraContainer.appendChild(btn);
+                btn.className = "btn-torch vibrate-tap";
+                btn.addEventListener('click', triggerVibrate);
+                if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             }
         });
     });
