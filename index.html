@@ -17,17 +17,15 @@
         .dashboard-header { background: var(--primary-purple); color: white; padding: 12px 15px; border-radius: 15px; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .scanner-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 4px solid white; }
         
-        /* Natural Ultra-Transparent Card */
         #profile-card { 
             position: fixed; top: 12px; left: 50%; transform: translateX(-50%); 
             width: 92%; max-width: 440px; 
-            background: rgba(255, 255, 255, 0.35) !important;
-            backdrop-filter: blur(25px) saturate(180%) !important; 
-            -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+            background: rgba(255, 255, 255, 0.4) !important;
+            backdrop-filter: blur(20px) saturate(180%) !important; 
+            -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
             border-radius: 20px; padding: 18px; text-align: center; z-index: 10000; 
             display: none; 
-            box-shadow: 0 15px 45px rgba(0,0,0,0.15) !important;
-            border: none !important;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.1) !important;
             border-bottom: 6px solid transparent !important;
             border-image: var(--gradient-glow) 1 !important;
         }
@@ -36,9 +34,7 @@
         #reader { width: 100% !important; border: none !important; }
 
         #control-row { padding: 8px 12px; display: flex; gap: 8px; align-items: center; background: #fff; border-bottom: 1px solid #eee; }
-        #manualIdInput { flex-grow: 1; min-width: 0; height: 38px; border: 2px solid #e0e0e0; border-radius: 10px; padding: 0 12px; font-size: 0.85rem; outline: none; cursor: pointer; }
-        #manualIdInput:focus { border-color: var(--primary-purple); background: #fdfdfd; box-shadow: 0 0 0 3px rgba(59, 10, 77, 0.1); }
-        
+        #manualIdInput { flex-grow: 1; min-width: 0; height: 38px; border: 2px solid #e0e0e0; border-radius: 10px; padding: 0 12px; font-size: 0.85rem; outline: none; }
         #btn-checkin { background: var(--primary-purple); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 0.8rem; padding: 0 15px; height: 38px; white-space: nowrap; }
 
         #extra-controls { display: flex; gap: 6px; }
@@ -57,7 +53,7 @@
     <div id="profile-card">
         <div class="d-flex align-items-center justify-content-center mb-1">
             <span id="scan-icon" style="font-size: 20px; margin-right: 8px;"></span>
-            <h5 id="p-name" class="fw-bold m-0" style="color: #000; font-size: 1.15rem; letter-spacing: -0.5px;"></h5>
+            <h5 id="p-name" class="fw-bold m-0" style="color: #000; font-size: 1.1rem;"></h5>
         </div>
         <div id="p-msg" class="mt-1 fw-bold" style="color: #222; font-size: 0.9rem;"></div>
     </div>
@@ -67,7 +63,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <h4 class="fw-bold m-0" style="font-size: 1.05rem;">1st RCPH 2026</h4>
-                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v6.5</span>
+                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v6.7</span>
                 </div>
                 <div class="count-circle-container">
                     <span class="small fw-bold" style="font-size: 0.6rem;">PRESENT</span>
@@ -87,7 +83,7 @@
 
         <div class="scanner-card">
             <div id="control-row">
-                <input type="text" id="manualIdInput" placeholder="Tap to Enter ID..." onclick="this.value=''" autocomplete="off">
+                <input type="text" id="manualIdInput" placeholder="Enter ID..." onclick="this.value=''" autocomplete="off">
                 <button id="btn-checkin" onclick="handleManual()" class="btn-active-effect">Check-In</button>
                 <div id="extra-controls"></div>
             </div>
@@ -109,10 +105,7 @@
 
     window.onload = function() {
         const pin = prompt("Security PIN:");
-        if (pin !== "umbi") { location.reload(); } else { 
-            syncCount(); 
-            document.getElementById('manualIdInput').focus(); // Initial focus
-        }
+        if (pin !== "umbi") { location.reload(); } else { syncCount(); }
     };
 
     function updateModeText() {
@@ -124,11 +117,11 @@
 
     function showNotification(title, message, icon, color, status) {
         const card = document.getElementById('profile-card');
-        const manualInput = document.getElementById('manualIdInput');
-        
         let displayTitle = title;
+        
+        // Correct text labels
         if (title === "SUCCESS") displayTitle = "VERIFIED";
-        if (title === "ALREADY_VERIFIED") displayTitle = "ALREADY VERIFIED";
+        if (title.includes("ALREADY") && title.includes("VERIFY")) displayTitle = "ALREADY VERIFIED";
         if (title === "ALREADY") displayTitle = "ALREADY CHECKED-IN";
 
         let cleanName = message.split('\n')[0].replace(/✅|⚠️|❌|SUCCESS:|VERIFIED:|ALREADY CHECKED IN:|ALREADY VERIFIED:|CONFIRMED:/gi, '').trim();
@@ -140,16 +133,9 @@
         card.style.display = "block";
         if(status === "SUCCESS") playSound('beepSuccess'); else playSound('beepWarning');
 
-        // Focus keyboard while card is showing
-        manualInput.focus();
-
         setTimeout(() => { 
             card.style.display = "none"; 
-            if (html5QrcodeScanner.getState() === 3) {
-                html5QrcodeScanner.resume();
-            } else {
-                manualInput.focus(); // Ensure focus if scanner stays off
-            }
+            if (html5QrcodeScanner.getState() === 3) html5QrcodeScanner.resume();
         }, 3000);
     }
 
@@ -161,9 +147,10 @@
             .then(res => res.json())
             .then(res => {
                 if (res.count !== undefined) document.getElementById('total-count').innerText = res.count;
+                // Clean header name: remove all icons and labels
                 const cleanHeaderName = res.message.split('\n')[0]
-                    .replace(/✅|⚠️|❌|SUCCESS:|VERIFIED:|ALREADY CHECKED IN:|ALREADY VERIFIED:|CONFIRMED:/gi, '')
-                    .replace(/PUAN \| MRS\. |TUAN \| MR\. /g, '').trim();
+                    .replace(/✅|⚠️|❌|SUCCESS:|VERIFIED:|ALREADY CHECKED IN:|ALREADY VERIFIED:|CONFIRMED:|PUAN \| MRS\. |TUAN \| MR\. /gi, '')
+                    .trim();
                 document.getElementById('last-person-name').innerText = cleanHeaderName;
                 showNotification(res.status, res.message, res.status === "SUCCESS" ? "✅" : "⚠️", res.status === "SUCCESS" ? "#28a745" : "#ffc107", res.status);
             });
@@ -172,10 +159,7 @@
     function handleManual() {
         vibrate();
         const input = document.getElementById('manualIdInput');
-        if (input.value.trim()) { 
-            onScanSuccess(input.value.trim().toUpperCase()); 
-            input.value = ""; 
-        }
+        if (input.value.trim()) { onScanSuccess(input.value.trim().toUpperCase()); input.value = ""; }
     }
 
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
@@ -186,33 +170,25 @@
     });
     html5QrcodeScanner.render(onScanSuccess);
 
-    // Hardened Persistent Button Monitor + Auto Focus Monitor
-    const observer = new MutationObserver(() => {
+    // Persistent Button Management
+    setInterval(() => {
         const extraContainer = document.getElementById("extra-controls");
         const libButtons = document.querySelectorAll("#reader button");
-        const manualInput = document.getElementById('manualIdInput');
         
         libButtons.forEach(btn => {
             const txt = btn.innerText.toUpperCase();
             if (txt.includes("STOP") || txt.includes("SCANNING")) {
-                if (btn.innerHTML !== "📸") btn.innerHTML = "📸";
+                btn.innerHTML = "📸";
                 btn.style.backgroundColor = "#dc3545";
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             } 
             if (txt.includes("TORCH") || txt.includes("FLASH") || txt.includes("SWITCH") || txt.includes("ON") || txt.includes("OFF")) {
-                if (btn.innerHTML !== "🔦") btn.innerHTML = "🔦";
-                btn.style.backgroundColor = "var(--accent-yellow)";
-                btn.style.color = "#000";
+                btn.innerHTML = "🔦";
+                btn.style.backgroundColor = "var(--accent-yellow)"; btn.style.color = "#000";
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             }
-            // Auto-focus manual input when "Start Scanning" button is visible (meaning scanner is off)
-            if (txt.includes("START")) {
-                manualInput.focus();
-            }
         });
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+    }, 500);
     </script>
 </body>
 </html>
