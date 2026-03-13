@@ -68,7 +68,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <h4 class="fw-bold m-0" style="font-size: 1.05rem;">1st RCPH 2026</h4>
-                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v7.5</span>
+                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v7.7</span>
                 </div>
                 <div class="count-circle" id="total-count">?</div>
             </div>
@@ -86,7 +86,7 @@
         <div class="scanner-card">
             <div id="control-row">
                 <input type="text" id="manualIdInput" placeholder="Tap to Enter ID..." autocomplete="off" 
-                       onclick="this.value='R0'" onfocus="this.value='R0'">
+                       onclick="this.value='R0'" onfocus="this.value='R'">
                 <button id="btn-checkin" onclick="handleManual()">Check-In</button>
                 <div id="extra-controls"></div>
             </div>
@@ -172,7 +172,7 @@
     function handleManual() {
         vibrate();
         const input = document.getElementById('manualIdInput');
-        if (input.value.trim() && input.value !== "R0") { 
+        if (input.value.trim() && input.value.trim().toUpperCase() !== "R") { 
             onScanSuccess(input.value.trim().toUpperCase()); 
             input.value = ""; 
         }
@@ -200,12 +200,17 @@
             if (txt.includes("TORCH") || txt.includes("FLASH") || txt.includes("ON") || txt.includes("OFF")) {
                 // If 🔦 emoji doesn't stick, we use "T"
                 btn.innerHTML = "🔦"; 
-                if (btn.innerText === "🔦") { /* stays emoji */ } else { btn.innerText = "T"; }
-                
-                btn.style.fontSize = "1.2rem"; btn.style.color = "black";
-                btn.style.backgroundColor = "var(--accent-yellow)";
-                if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
+                if (btn.innerText !== "🔦") { 
+                btn.innerText = "T"; 
+                btn.style.fontSize = "0.5rem"; // Tiny font for the "T" fallback
+            } else {
+                btn.style.fontSize = "1.2rem"; // Normal size for emoji
             }
+            
+            btn.style.color = "black";
+            btn.style.backgroundColor = "var(--accent-yellow)";
+            if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
+        }
         });
     }, 100); 
     </script>
