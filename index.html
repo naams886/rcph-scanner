@@ -64,8 +64,20 @@
             object-fit: cover; 
         }
 
-        #reader__dashboard_section_csr {
-            padding: 5px 0 !important;
+        #reader__dashboard_section_csr { display: none !important; }
+
+        #stop-button-container button {
+            background-color: #dc3545 !important; /* Red for Stop */
+            color: white !important;
+            border: none !important;
+            padding: 0 12px !important;
+            height: 36px !important;
+            border-radius: 8px !important;
+            font-weight: bold !important;
+            font-size: 0.75rem !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            text-transform: uppercase !important;
         }
 
         /* Clean up the camera container */
@@ -98,44 +110,47 @@
     </div>
 
     <div class="main-container">
-        <div class="dashboard-header">
-            <div style="flex: 1;">
-                <h4 class="fw-bold m-0">1st RCPH 2026</h4>
-                <p class="small m-0 opacity-75" id="mode-text">Attendance Mode</p>
-                
-                <div class="form-check form-switch mt-1">
-                    <input class="form-check-input" type="checkbox" id="modeSwitch" style="cursor: pointer; transform: scale(0.85); origin: left;">
-                    <label class="form-check-label ms-1 fw-bold" for="modeSwitch" style="font-size: 0.75rem; vertical-align: middle;">Verification Mode</label>
-                </div>
-
-                <div id="last-person-container">
-                    👤 <span id="last-person-name">None</span>
-                </div>
+    <div class="dashboard-header" style="position: relative; padding-top: 20px !important;">
+        <div style="position: absolute; top: 5px; right: 15px; font-size: 0.6rem; opacity: 0.5;">v3.0-GH</div>
+        <div style="flex: 1;">
+            <h4 class="fw-bold m-0" style="font-size: 1.1rem;">1st RCPH 2026</h4>
+            <p class="small m-0 opacity-75" id="mode-text">Attendance Mode</p>
+            
+            <div class="form-check form-switch mt-1">
+                <input class="form-check-input" type="checkbox" id="modeSwitch" style="transform: scale(0.85); origin: left;">
+                <label class="form-check-label ms-1 fw-bold" for="modeSwitch" style="font-size: 0.75rem;">Verification Mode</label>
             </div>
-            <div class="text-end">
-                <div style="font-size: 0.65rem; opacity: 0.6; margin-bottom: 2px;">v2.9-GH</div>
-                <div class="count-circle-container">
-                    <div class="count-circle">
-                        <div id="total-count">?</div>
-                    </div>
-                    <div style="font-size: 0.6rem; margin-top: 3px; font-weight: bold; text-transform: uppercase;">Present</div>
-                </div>
+
+            <div id="last-person-container">
+                👤 <span id="last-person-name">None</span>
             </div>
         </div>
-
-        <div class="scanner-card shadow-sm">
-            <div style="padding: 8px; display: flex; gap: 5px; border-bottom: 1px solid #eee; background: #fdfdfd;">
-                <input type="text" id="manualIdInput" placeholder="ID (R001)" 
-                       style="flex: 1; padding: 6px 10px; border: 2px solid var(--primary-purple); border-radius: 8px; font-size: 0.85rem;">
-                <button onclick="processManualEntry()" 
-                        style="background: var(--primary-purple); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; font-size: 0.8rem;">
-                        Check-In
-                </button>
+        <div class="text-end">
+            <div class="count-circle-container">
+                <div class="count-circle">
+                    <div id="total-count">?</div>
+                </div>
+                <div style="font-size: 0.55rem; margin-top: 3px; font-weight: bold; text-transform: uppercase;">Present</div>
             </div>
-
-            <div id="reader"></div>
         </div>
     </div>
+
+    <div class="scanner-card shadow-sm">
+        <div id="control-row" style="padding: 8px; display: flex; gap: 5px; border-bottom: 1px solid #eee; background: #fdfdfd; align-items: center;">
+            <input type="text" id="manualIdInput" placeholder="ID (R001)" 
+                   style="flex: 1; min-width: 0; padding: 6px; border: 2px solid var(--primary-purple); border-radius: 8px; font-size: 0.8rem; height: 36px;">
+            
+            <button onclick="processManualEntry()" 
+                    style="background: var(--primary-purple); color: white; border: none; padding: 0 12px; height: 36px; border-radius: 8px; font-weight: bold; font-size: 0.75rem; white-space: nowrap;">
+                    Check-In
+            </button>
+
+            <div id="stop-btn-holder"></div>
+        </div>
+
+        <div id="reader"></div>
+    </div>
+</div>
 
     <audio id="beepAttendance" src="https://assets.mixkit.co/active_storage/sfx/2635/2635-preview.mp3" preload="auto"></audio>
     <audio id="beepVerify" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" preload="auto"></audio>
@@ -263,11 +278,29 @@
     }
 
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
-        fps: 20, 
-        qrbox: { width: 250, height: 350 },
-        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+        fps: 30, 
+        qrbox: { width: 300, height: 350 },
+        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
+        videoConstraints: {
+        facingMode: "environment",
+        focusMode: "continuous" // Hint for mobile browsers to keep focus sharp
+    }
     });
     html5QrcodeScanner.render(onScanSuccess);
+
+        const observer = new MutationObserver(() => {
+        const originalStopBtn = document.querySelector("#reader button");
+        const targetDiv = document.getElementById("stop-btn-holder");
+        
+        if (originalStopBtn && originalStopBtn.innerText.toUpperCase().includes("STOP")) {
+            if (targetDiv && targetDiv.children.length === 0) {
+                targetDiv.appendChild(originalStopBtn);
+            }
+        }
+    });
+    
+    observer.observe(document.getElementById("reader"), { childList: true, subtree: true });
+        
     </script>
 </body>
 </html>
