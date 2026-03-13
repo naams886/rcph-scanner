@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>1st RCPH 2026 LENS</title>
+    <title>1st RCPH 2026 SCANNER</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     
@@ -34,8 +34,8 @@
             color: var(--primary-purple);
             border: 2px solid white;
             border-radius: 50%;
-            width: 25px;
-            height: 25px;
+            width: 30px;
+            height: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -47,21 +47,25 @@
             font-weight: bold;
         }
 
-        .dashboard-header {
-            padding: 10px 15px !important;
-            margin-bottom: 5px !important;
+        #manualIdInput {
+            height: 35px !important;
+        }
+
+        #reader button {
+            padding: 5px 12px !important;
+            font-size: 0.7rem !important;
+            margin: 5px 0 !important;
+            border-radius: 8px !important;
         }
 
         /* Force the camera video to stay a specific size */
         #reader__video { 
-            height: 250px !important; 
+            height: 300px !important; 
             object-fit: cover; 
         }
 
-        #reader button {
-            padding: 6px 15px !important;
-            font-size: 0.7rem !important;
-            margin: 5px 0 !important;
+        #reader__dashboard_section_csr {
+            padding: 5px 0 !important;
         }
 
         /* Clean up the camera container */
@@ -85,7 +89,6 @@
     </style>
 </head>
 <body>
-    <body>
     <div id="profile-card">
         <div class="d-flex align-items-center justify-content-center">
             <span id="scan-icon" style="font-size: 20px; margin-right: 10px;">✅</span>
@@ -97,31 +100,35 @@
     <div class="main-container">
         <div class="dashboard-header">
             <div style="flex: 1;">
-                <h4 class="fw-bold m-0" style="font-size: 1.1rem;">1st RCPH 2026</h4>
+                <h4 class="fw-bold m-0">1st RCPH 2026</h4>
+                <p class="small m-0 opacity-75" id="mode-text">Attendance Mode</p>
+                
+                <div class="form-check form-switch mt-1">
+                    <input class="form-check-input" type="checkbox" id="modeSwitch" style="cursor: pointer; transform: scale(0.85); origin: left;">
+                    <label class="form-check-label ms-1 fw-bold" for="modeSwitch" style="font-size: 0.75rem; vertical-align: middle;">Verification Mode</label>
+                </div>
+
                 <div id="last-person-container">
                     👤 <span id="last-person-name">None</span>
                 </div>
             </div>
-            
-            <div class="text-end d-flex flex-column align-items-end" style="gap: 5px;">
-                <div class="form-check form-switch bg-white text-dark rounded-pill px-2 py-1" style="font-size: 0.7rem; scale: 0.9;">
-                    <input class="form-check-input" type="checkbox" id="modeSwitch">
-                    <label class="form-check-label fw-bold" for="modeSwitch">VERIFY</label>
-                </div>
+            <div class="text-end">
+                <div style="font-size: 0.65rem; opacity: 0.6; margin-bottom: 2px;">v2.9-GH</div>
                 <div class="count-circle-container">
                     <div class="count-circle">
                         <div id="total-count">?</div>
                     </div>
+                    <div style="font-size: 0.6rem; margin-top: 3px; font-weight: bold; text-transform: uppercase;">Present</div>
                 </div>
             </div>
         </div>
 
         <div class="scanner-card shadow-sm">
-            <div style="padding: 8px; display: flex; gap: 5px; background: #fafafa; border-bottom: 1px solid #eee;">
+            <div style="padding: 8px; display: flex; gap: 5px; border-bottom: 1px solid #eee; background: #fdfdfd;">
                 <input type="text" id="manualIdInput" placeholder="ID (R001)" 
-                       style="flex: 2; padding: 8px; border: 1px solid var(--primary-purple); border-radius: 8px; font-size: 0.85rem;">
+                       style="flex: 1; padding: 6px 10px; border: 2px solid var(--primary-purple); border-radius: 8px; font-size: 0.85rem;">
                 <button onclick="processManualEntry()" 
-                        style="flex: 1; background: var(--primary-purple); color: white; border: none; padding: 8px; border-radius: 8px; font-weight: bold; font-size: 0.8rem;">
+                        style="background: var(--primary-purple); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; font-size: 0.8rem;">
                         Check-In
                 </button>
             </div>
@@ -256,8 +263,8 @@
     }
 
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
-        fps: 25, 
-        qrbox: { width: 280, height: 180 },
+        fps: 20, 
+        qrbox: { width: 250, height: 350 },
         supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
     });
     html5QrcodeScanner.render(onScanSuccess);
