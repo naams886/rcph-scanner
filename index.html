@@ -1,90 +1,147 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RCPH 2026 LENS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>1st RCPH 2026 LENS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    
     <style>
-        body { background: #121212; color: white; text-align: center; font-family: sans-serif; }
-        #video { width: 100%; max-width: 500px; border-radius: 20px; border: 4px solid #3b0a4d; background: #000; margin-top: 10px; }
-        .status-card { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); width: 90%; display: none; padding: 20px; border-radius: 15px; z-index: 1000; font-weight: bold; }
+        /* --- ALL YOUR ORIGINAL CSS REMAINS UNCHANGED --- */
+        :root { --primary-purple: #3b0a4d; --accent-blue: #0dcaf0; --glass-bg: rgba(255, 255, 255, 0.9); }
+        #reader__dashboard_section_csr { display: flex !important; flex-direction: row !important; flex-wrap: wrap !important; justify-content: center !important; gap: 12px !important; padding: 10px 0 !important; }
+        #reader__dashboard_section_csr button { flex: 0 1 auto !important; width: auto !important; min-width: 120px !important; margin: 5px 0 !important; }
+        #reader button { background-color: var(--primary-purple) !important; color: white !important; border: none !important; padding: 10px 20px !important; border-radius: 10px !important; font-weight: 600 !important; text-transform: uppercase !important; font-size: 0.8rem !important; letter-spacing: 1px !important; transition: all 0.3s ease !important; margin: 10px 0 !important; box-shadow: 0 4px 10px rgba(59, 10, 77, 0.2) !important; }
+        #reader__dashboard_section_swaplink { display: none !important; }
+        body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); height: 100vh; overflow: hidden; position: fixed; width: 100%; padding: 15px; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        .main-container { max-width: 500px; margin: auto; }
+        .dashboard-header { background: var(--primary-purple); color: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .scanner-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 5px solid white; }
+        #profile-card { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 450px; background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 12px; text-align: center; z-index: 10000; display: none; box-shadow: 0 4px 20px rgba(0,0,0,0.2); border-bottom: 6px solid #ddd; animation: slideDown 0.4s ease-out; }
+        @keyframes slideDown { from { top: -100px; opacity: 0; } to { top: 10px; opacity: 1; } }
+        #reader__video { max-height: 250px !important; object-fit: cover; }
     </style>
 </head>
 <body>
+    <div id="profile-card">
+        <div class="d-flex align-items-center justify-content-center">
+            <span id="scan-icon" style="font-size: 20px; margin-right: 10px;">✅</span>
+            <h5 id="p-name" class="fw-bold m-0" style="font-size: 0.95rem; color: #333;">NAME HERE</h5>
+        </div>
+        <div id="p-msg" class="small fw-bold opacity-75 mt-1" style="color: #555;">Ready...</div>
+    </div>
 
-    <div id="status-card" class="status-card"></div>
-
-    <div class="container mt-3">
-        <h4 class="fw-bold" style="color:#a64dff">1st RCPH 2026</h4>
-        <p class="small text-secondary">Native Hardware Scanner (No Iframe)</p>
-        
-        <video id="video" autoplay playsinline></video>
-        
-        <div class="mt-3 d-grid gap-2">
-            <button id="start-btn" onclick="initScanner()" class="btn btn-primary p-3 fw-bold" style="background:#3b0a4d; border:none;">⚡ START LENS</button>
+    <div class="main-container">
+        <div class="dashboard-header">
+            <div>
+                <h4 class="fw-bold m-0">1st RCPH 2026</h4>
+                <p class="small m-0 opacity-75" id="mode-text">Attendance Mode</p>
+            </div>
+            <div class="text-end">
+                <div style="font-size: 0.65rem; opacity: 0.6; margin-bottom: 2px;">v13.5-GH</div>
+                <div class="count-circle">
+                    <div class="h4 fw-bold m-0" id="total-count">?</div>
+                </div>
+            </div>
         </div>
 
-        <div class="mt-4">
-            <input type="text" id="manualInput" class="form-control text-center" placeholder="Manual ID (e.g. R001)">
-            <button class="btn btn-outline-light btn-sm mt-2 w-100" onclick="sendToGoogle(document.getElementById('manualInput').value)">Submit Manual</button>
+        <div class="mode-selector shadow-sm text-center" style="background: white; padding: 10px; border-radius: 10px; margin-bottom: 10px;">
+            <div class="form-check form-switch d-inline-block">
+                <input class="form-check-input" type="checkbox" id="modeSwitch">
+                <label class="form-check-label ms-2 fw-bold small" for="modeSwitch">Verification Mode</label>
+            </div>
+        </div>
+
+        <div class="scanner-card shadow-sm">
+            <div id="reader"></div>
+            <div style="padding: 10px; display: flex; gap: 5px;">
+                <input type="text" id="manualIdInput" placeholder="ID (R001)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+                <button onclick="processManualEntry()" style="background: #3b0a4d; color: white; border: none; padding: 8px 15px; border-radius: 5px;">Check-In</button>
+            </div>
         </div>
     </div>
 
+    <audio id="beepAttendance" src="https://assets.mixkit.co/active_storage/sfx/2635/2635-preview.mp3" preload="auto"></audio>
+    <audio id="beepVerify" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" preload="auto"></audio>
+    <audio id="beepWarning" src="https://assets.mixkit.co/active_storage/sfx/1084/1084-preview.mp3" preload="auto"></audio>
+
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxUSPowEUSb4x6M1aXBhIIzYocmdzYfPhgndOxOQHgtZejpevK0ts76Dm2cQ8ysQFVR/exec";
-        let video = document.getElementById('video');
-        let statusCard = document.getElementById('status-card');
+    // --- THE CRITICAL CHANGES START HERE ---
+    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbw_TPW1uMwXQjWn2i7Fj-LQId1FuE1PjwxEBrHFKzP0SlSYR0qwFcqq0QmPO53o3wuG/exec";
+    
+    let lastScannedId = "";
+    let lastScanTime = 0;
+    const COOLDOWN_MS = 5000;
 
-        async function initScanner() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                video.srcObject = stream;
-                document.getElementById('start-btn').style.display = 'none';
-                
-                if (!('BarcodeDetector' in window)) {
-                    alert("This browser doesn't support Native Detection. Try Chrome on Android.");
-                    return;
-                }
+    const modeSwitch = document.getElementById('modeSwitch');
+    const profileCard = document.getElementById('profile-card');
+    const pName = document.getElementById('p-name');
+    const pMsg = document.getElementById('p-msg');
+    const scanIcon = document.getElementById('scan-icon');
 
-                const detector = new BarcodeDetector({ formats: ['qr_code'] });
-                
-                async function scan() {
-                    const barcodes = await detector.detect(video);
-                    if (barcodes.length > 0) {
-                        sendToGoogle(barcodes[0].rawValue);
-                        return; // Stop scanning while processing
-                    }
-                    requestAnimationFrame(scan);
-                }
-                scan();
-            } catch (err) {
-                alert("Camera Access Denied. Check site permissions.");
-            }
+    function showNotification(title, message, icon, color, autoHide = true) {
+        if (window.hideTimeout) clearTimeout(window.hideTimeout);
+        profileCard.style.display = "block";
+        profileCard.style.opacity = "1";
+        profileCard.style.borderBottomColor = color;
+        scanIcon.innerText = icon;
+        pName.innerText = title;
+        pMsg.innerText = message;
+
+        if (autoHide) {
+            window.hideTimeout = setTimeout(() => {
+                profileCard.style.opacity = "0";
+                setTimeout(() => { 
+                    profileCard.style.display = "none"; 
+                    html5QrcodeScanner.resume();
+                }, 600);
+            }, 3000);
         }
+    }
 
-        async function sendToGoogle(content) {
-            showStatus("PROCESSING...", "#3b0a4d");
+    function onScanSuccess(decodedText) {
+        const currentTime = Date.now();
+        if (decodedText === lastScannedId && (currentTime - lastScanTime) < COOLDOWN_MS) return;
 
-            // We use the URL query string to send data to the Google Script
-            const finalUrl = `${API_URL}?qrContent=${encodeURIComponent(content)}`;
+        lastScannedId = decodedText;
+        lastScanTime = currentTime;
 
-            try {
-                const response = await fetch(finalUrl, { method: 'GET', mode: 'no-cors' });
-                // Note: 'no-cors' means we won't see the response body, but the data WILL reach your sheet.
-                showStatus("✅ SENT TO GOOGLE\nCheck sheet for confirmation.", "#28a745");
-                setTimeout(() => { location.reload(); }, 4000);
-            } catch (err) {
-                showStatus("CONNECTION ERROR", "#dc3545");
-                setTimeout(() => { location.reload(); }, 4000);
-            }
+        html5QrcodeScanner.pause();
+        showNotification("SENDING...", "To Google Sheets...", "⏳", "#3b0a4d", false);
+
+        // REPLACEMENT FOR google.script.run
+        const mode = modeSwitch.checked ? "verify" : "attendance";
+        const finalUrl = `${GOOGLE_URL}?qrContent=${encodeURIComponent(decodedText)}&mode=${mode}`;
+
+        fetch(finalUrl, { method: 'GET', mode: 'no-cors' })
+            .then(() => {
+                // Because of 'no-cors', we assume success if the request completes
+                const sound = document.getElementById(modeSwitch.checked ? 'beepVerify' : 'beepAttendance');
+                sound.play();
+                showNotification("SUCCESS", "Data Sent to Sheet", "✅", "#28a745", true);
+            })
+            .catch(err => {
+                document.getElementById('beepWarning').play();
+                showNotification("ERROR", "Check Internet", "❌", "#dc3545", true);
+            });
+    }
+
+    function processManualEntry() {
+        const input = document.getElementById('manualIdInput');
+        if (input.value.trim()) {
+            onScanSuccess(input.value.trim().toUpperCase());
+            input.value = "";
         }
+    }
 
-        function showStatus(msg, color) {
-            statusCard.innerText = msg;
-            statusCard.style.backgroundColor = color;
-            statusCard.style.display = 'block';
-        }
+    // Initialize Scanner
+    let html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
+        fps: 20, 
+        qrbox: 250,
+        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+    });
+    html5QrcodeScanner.render(onScanSuccess);
     </script>
 </body>
 </html>
