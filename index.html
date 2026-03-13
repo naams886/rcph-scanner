@@ -54,20 +54,11 @@
         
         /* Forces the video and the box to stay compact */
         #reader__video { 
-            max-height: 350px !important; /* Shrunk from 250px */
+            height: 250px !important; /* Shrunk from 250px */
             object-fit: cover; 
         }
-
-        /* Adjusting the main scanner card to be tighter */
-        .scanner-card {
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border: 3px solid white;
-        }
-
-        #last-person-container {
+        
+            #last-person-container {
             margin-top: 5px;
             font-size: 0.7rem;
             background: rgba(255, 255, 255, 0.15);
@@ -100,7 +91,7 @@
                 </div>
             </div>
             <div class="text-end">
-                <div style="font-size: 0.65rem; opacity: 0.6; margin-bottom: 2px;">v2.4-GH</div>
+                <div style="font-size: 0.65rem; opacity: 0.6; margin-bottom: 2px;">v2.5-GH</div>
                 <div class="count-circle-container">
                     <div class="count-circle">
                         <div id="total-count">?</div>
@@ -145,7 +136,7 @@
 
     // 3) PIN appears immediately on load
     window.onload = function() {
-        const SCANNER_PIN = "2026";
+        const SCANNER_PIN = "umbi";
         let userPin = prompt("Enter security PIN to authorize scanner:");
         if (userPin !== SCANNER_PIN) {
             alert("Unauthorized! Page will reload.");
@@ -253,7 +244,7 @@
 
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
         fps: 20, 
-        qrbox: { width: 280, height: 200 },
+        qrbox: { width: 200, height: 1250 },
         supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
     });
     html5QrcodeScanner.render(onScanSuccess);
