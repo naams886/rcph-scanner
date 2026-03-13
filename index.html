@@ -9,9 +9,11 @@
     
     <style>
         :root { --primary-purple: #3b0a4d; }
-        /* Hide library clutter but keep swap link active for the script */
-        #reader__dashboard_section_csr { display: none !important; }
-        #reader__dashboard_section_swaplink { opacity: 0; height: 0; overflow: hidden; }
+        
+        /* Hide all library links and file mode UI */
+        #reader__dashboard_section_csr, 
+        #reader__dashboard_section_swaplink,
+        #reader__dashboard_section_helper { display: none !important; }
 
         body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); height: 100vh; overflow: hidden; position: fixed; width: 100%; padding: 15px; font-family: 'Segoe UI', sans-serif; }
         .main-container { max-width: 500px; margin: auto; }
@@ -21,7 +23,7 @@
         #reader__video { height: 350px !important; object-fit: cover; width: 100% !important; }
         #reader { width: 100% !important; border: none !important; }
 
-        /* Icon Button Styling */
+        /* Icon Button Styling for Top Row */
         #extra-controls { display: flex; gap: 5px; flex: 0 0 auto; }
         #extra-controls button {
             width: 42px !important; height: 38px !important;
@@ -59,7 +61,7 @@
         <div class="dashboard-header">
             <div class="d-flex justify-content-between align-items-center">
                 <h4 class="fw-bold m-0" style="font-size: 1.1rem;">1st RCPH 2026</h4>
-                <div style="font-size: 0.65rem; opacity: 0.6;">v4.3-STABLE</div>
+                <div style="font-size: 0.65rem; opacity: 0.6;">v4.4-GH</div>
             </div>
             <div class="d-flex justify-content-between align-items-end mt-1">
                 <div>
@@ -108,8 +110,12 @@
         }
     }
 
+    // Initialize Scanner - explicitly setting default to camera
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
-        fps: 20, qrbox: { width: 250, height: 250 }, showTorchButtonIfSupported: true 
+        fps: 20, 
+        qrbox: { width: 250, height: 250 }, 
+        showTorchButtonIfSupported: true,
+        rememberLastUsedCamera: true
     });
     html5QrcodeScanner.render((text) => console.log(text));
 
@@ -117,14 +123,10 @@
         const extraContainer = document.getElementById("extra-controls");
         const libraryButtons = document.querySelectorAll("#reader button");
         
-        // AUTO-CLICK SWAP LINK: Forces back to camera if stuck in file mode
-        const swapLink = document.querySelector("#reader__dashboard_section_swaplink a");
-        if (swapLink && swapLink.innerText.toLowerCase().includes("camera")) {
-            swapLink.click();
-        }
-
         libraryButtons.forEach(btn => {
             const text = btn.innerText.toUpperCase();
+            
+            // Move only the specific camera-active controls to the top row
             if (text.includes("STOP")) {
                 btn.className = "btn-stop vibrate-tap";
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
@@ -133,6 +135,7 @@
                 btn.className = "btn-torch vibrate-tap";
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             }
+            // The "Start Scanning" button will stay in the reader div by default
         });
     });
 
