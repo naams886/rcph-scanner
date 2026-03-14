@@ -17,10 +17,9 @@
         .dashboard-header { background: var(--primary-purple); color: white; padding: 12px 15px; border-radius: 15px; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .scanner-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 4px solid white; }
         
-        /* v7.5: 70% Transparent, Header-Sized Glass */
         #profile-card { 
             position: fixed; top: 12px; left: 50%; transform: translateX(-50%); 
-            width: 92%; max-width: 470px; /* Matches dashboard-header scale */
+            width: 92%; max-width: 470px; 
             background: rgba(255, 255, 255, 0.9) !important; 
             backdrop-filter: none !important; 
             -webkit-backdrop-filter: none !important;
@@ -33,12 +32,13 @@
         #reader__video { height: 360px !important; object-fit: cover; width: 100% !important; border-radius: 12px; }
         #reader { width: 100% !important; border: none !important; }
 
-        /* Fallback for buttons if icons fail */
+        /* Updated Button Style for Torch/Camera */
         #reader button { 
             background-color: var(--primary-purple) !important; 
             border-radius: 10px !important; 
-            font-size: 0.7rem !important; /* Smaller text for "T" fallback */
             font-weight: bold !important;
+            text-transform: uppercase;
+            border: none !important;
         }
 
         #control-row { padding: 8px 12px; display: flex; gap: 8px; align-items: center; background: #fff; border-bottom: 1px solid #eee; }
@@ -46,9 +46,10 @@
         #btn-checkin { background: var(--primary-purple); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 0.8rem; padding: 0 15px; height: 38px; white-space: nowrap; }
 
         #extra-controls { display: flex; gap: 6px; }
-        #extra-controls button { width: 38px !important; height: 38px !important; border-radius: 50% !important; border: none !important; display: flex; align-items: center; justify-content: center; }
+        #extra-controls button { height: 38px !important; border-radius: 10px !important; border: none !important; display: flex; align-items: center; justify-content: center; padding: 0 12px !important; font-size: 0.75rem !important; }
 
         .count-circle { background: white; color: var(--primary-purple); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; }
+        .present-label { font-size: 0.75rem; font-weight: bold; margin-right: 8px; opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -68,9 +69,12 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <h4 class="fw-bold m-0" style="font-size: 1.05rem;">1st RCPH 2026</h4>
-                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v7.7</span>
+                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v7.8</span>
                 </div>
-                <div class="count-circle" id="total-count">?</div>
+                <div class="d-flex align-items-center">
+                    <span class="present-label">PRESENT</span>
+                    <div class="count-circle" id="total-count">?</div>
+                </div>
             </div>
             <div class="d-flex justify-content-between align-items-center mt-2">
                 <div class="form-check form-switch">
@@ -86,7 +90,7 @@
         <div class="scanner-card">
             <div id="control-row">
                 <input type="text" id="manualIdInput" placeholder="Tap to Enter ID..." autocomplete="off" 
-                       onclick="this.value='R0'" onfocus="this.value='R'">
+                       onclick="this.value='R'" onfocus="this.value='R'">
                 <button id="btn-checkin" onclick="handleManual()">Check-In</button>
                 <div id="extra-controls"></div>
             </div>
@@ -186,31 +190,26 @@
     });
     html5QrcodeScanner.render(onScanSuccess);
 
-    // v7.5 Button Text Hijack (Fallback to "T")
+    // v7.7: Torch Button with Text "TORCH"
     setInterval(() => {
         const extraContainer = document.getElementById("extra-controls");
         const libButtons = document.querySelectorAll("#reader button");
         libButtons.forEach(btn => {
             const txt = btn.innerText.toUpperCase();
             if (txt.includes("STOP") || txt.includes("SCANNING")) {
-                btn.innerHTML = "📸"; btn.style.fontSize = "1.2rem"; btn.style.color = "white";
+                btn.innerHTML = "📸"; 
+                btn.style.fontSize = "1.2rem"; 
+                btn.style.color = "white";
                 btn.style.backgroundColor = "#dc3545";
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             } 
             if (txt.includes("TORCH") || txt.includes("FLASH") || txt.includes("ON") || txt.includes("OFF")) {
-                // If 🔦 emoji doesn't stick, we use "T"
-                btn.innerHTML = "🔦"; 
-                if (btn.innerText !== "🔦") { 
-                btn.innerText = "T"; 
-                btn.style.fontSize = "0.5rem"; // Tiny font for the "T" fallback
-            } else {
-                btn.style.fontSize = "1.2rem"; // Normal size for emoji
+                btn.innerText = "TORCH"; 
+                btn.style.fontSize = "0.75rem"; 
+                btn.style.color = "black";
+                btn.style.backgroundColor = "var(--accent-yellow)";
+                if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             }
-            
-            btn.style.color = "black";
-            btn.style.backgroundColor = "var(--accent-yellow)";
-            if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
-        }
         });
     }, 100); 
     </script>
