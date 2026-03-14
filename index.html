@@ -21,8 +21,6 @@
             position: fixed; top: 12px; left: 50%; transform: translateX(-50%); 
             width: 92%; max-width: 470px; 
             background: rgba(255, 255, 255, 0.9) !important; 
-            backdrop-filter: none !important; 
-            -webkit-backdrop-filter: none !important;
             border-radius: 15px; padding: 18px; text-align: center; z-index: 10000; 
             display: none; 
             box-shadow: 0 8px 32px rgba(0,0,0,0.15) !important;
@@ -32,24 +30,24 @@
         #reader__video { height: 360px !important; object-fit: cover; width: 100% !important; border-radius: 12px; }
         #reader { width: 100% !important; border: none !important; }
 
-        /* Updated Button Style for Torch/Camera */
         #reader button { 
             background-color: var(--primary-purple) !important; 
             border-radius: 10px !important; 
             font-weight: bold !important;
-            text-transform: uppercase;
             border: none !important;
         }
 
-        #control-row { padding: 8px 12px; display: flex; gap: 8px; align-items: center; background: #fff; border-bottom: 1px solid #eee; }
-        #manualIdInput { flex-grow: 1; min-width: 0; height: 38px; border: 2px solid #e0e0e0; border-radius: 10px; padding: 0 12px; font-size: 0.85rem; outline: none; }
-        #btn-checkin { background: var(--primary-purple); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 0.8rem; padding: 0 15px; height: 38px; white-space: nowrap; }
+        /* Control Row Layout: Shifting Input left to give Buttons room */
+        #control-row { padding: 8px 10px; display: flex; gap: 5px; align-items: center; background: #fff; border-bottom: 1px solid #eee; }
+        #manualIdInput { flex: 1; min-width: 80px; height: 38px; border: 2px solid #e0e0e0; border-radius: 10px; padding: 0 8px; font-size: 0.8rem; outline: none; }
+        #btn-checkin { background: var(--primary-purple); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 0.75rem; padding: 0 10px; height: 38px; white-space: nowrap; }
 
-        #extra-controls { display: flex; gap: 6px; }
-        #extra-controls button { height: 38px !important; border-radius: 10px !important; border: none !important; display: flex; align-items: center; justify-content: center; padding: 0 12px !important; font-size: 0.75rem !important; }
+        #extra-controls { display: flex; gap: 5px; }
+        /* Increased button width slightly for Torch text */
+        #extra-controls button { height: 38px !important; min-width: 42px; border-radius: 10px !important; border: none !important; display: flex; align-items: center; justify-content: center; padding: 0 5px !important; }
 
         .count-circle { background: white; color: var(--primary-purple); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; }
-        .present-label { font-size: 0.75rem; font-weight: bold; margin-right: 8px; opacity: 0.9; }
+        .present-label { font-size: 0.7rem; font-weight: bold; margin-right: 5px; opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -69,7 +67,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <h4 class="fw-bold m-0" style="font-size: 1.05rem;">1st RCPH 2026</h4>
-                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v7.8</span>
+                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v7.9</span>
                 </div>
                 <div class="d-flex align-items-center">
                     <span class="present-label">PRESENT</span>
@@ -89,7 +87,7 @@
 
         <div class="scanner-card">
             <div id="control-row">
-                <input type="text" id="manualIdInput" placeholder="Tap to Enter ID..." autocomplete="off" 
+                <input type="text" id="manualIdInput" placeholder="Tap ID..." autocomplete="off" 
                        onclick="this.value='R'" onfocus="this.value='R'">
                 <button id="btn-checkin" onclick="handleManual()">Check-In</button>
                 <div id="extra-controls"></div>
@@ -190,7 +188,7 @@
     });
     html5QrcodeScanner.render(onScanSuccess);
 
-    // v7.7: Torch Button with Text "TORCH"
+    // v7.8: Larger Camera Icon & Compact Torch Text
     setInterval(() => {
         const extraContainer = document.getElementById("extra-controls");
         const libButtons = document.querySelectorAll("#reader button");
@@ -198,14 +196,15 @@
             const txt = btn.innerText.toUpperCase();
             if (txt.includes("STOP") || txt.includes("SCANNING")) {
                 btn.innerHTML = "📸"; 
-                btn.style.fontSize = "1.2rem"; 
+                btn.style.fontSize = "1.5rem"; // LARGER ICON
                 btn.style.color = "white";
                 btn.style.backgroundColor = "#dc3545";
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
             } 
             if (txt.includes("TORCH") || txt.includes("FLASH") || txt.includes("ON") || txt.includes("OFF")) {
                 btn.innerText = "TORCH"; 
-                btn.style.fontSize = "0.75rem"; 
+                btn.style.fontSize = "0.65rem"; // TINY TEXT TO FIT
+                btn.style.whiteSpace = "nowrap";
                 btn.style.color = "black";
                 btn.style.backgroundColor = "var(--accent-yellow)";
                 if (btn.parentElement !== extraContainer) extraContainer.appendChild(btn);
