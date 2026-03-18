@@ -79,7 +79,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <h4 class="fw-bold m-0" style="font-size: 1.05rem;">1st RCPH 2026</h4>
-                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v8.2</span>
+                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v8.3</span>
                 </div>
                 <div class="d-flex align-items-center">
                     <span class="present-label">PRESENT</span>
@@ -110,19 +110,25 @@
 
     <script>
     const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbz-wC1kWKox_lqtGexP09BX46GDu-86OiuOljOguuCjTwLIopC0tMN3SpTX2U5ivRbW/exec";
+    const _S = "UkNQSDIwMjY=";
     
     function vibrate() { if (navigator.vibrate) navigator.vibrate(50); }
     function playSound(id) { document.getElementById(id).play().catch(()=>{}); }
 
     function syncCount() {
-        fetch(`${GOOGLE_URL}?mode=sync&secret=RCPH2026`)
+        fetch(`${GOOGLE_URL}?mode=sync&secret=${atob(_S)}`)
             .then(res => res.json())
             .then(res => { if (res.count !== undefined) document.getElementById('total-count').innerText = res.count; });
     }
 
     window.onload = function() {
         const pin = prompt("Security PIN:");
-        if (pin !== "umbi") { location.reload(); } else { syncCount(); }
+        if (window.btoa(pin) !== "dW1iaQ==") { 
+            alert("Access Denied");
+            location.reload(); 
+        } else { 
+            syncCount(); 
+        }
     };
 
     function updateModeText() {
@@ -172,12 +178,12 @@
         vibrate();
         html5QrcodeScanner.pause();
         const mode = document.getElementById('modeSwitch').checked ? "verify" : "attendance";
-        fetch(`${GOOGLE_URL}?qrContent=${encodeURIComponent(decodedText)}&mode=${mode}&secret=RCPH2026`)
+        fetch(`${GOOGLE_URL}?qrContent=${encodeURIComponent(decodedText)}&mode=${mode}&secret=${atob(_S)}`)
             .then(res => res.json())
             .then(res => {
                 if (res.count !== undefined) document.getElementById('total-count').innerText = res.count;
                 document.getElementById('last-person-name').innerText = cleanGuestName(res.message);
-                let icon = "✅"; 
+                let icon = (res.status === "SUCCESS") ? "✅" : "⚠️";
                 if (res.status.includes("ALREADY")) icon = "⚠️";
                 else if (res.status === "ERROR") icon = "❌";
                 showNotification(res.status, res.message, icon, "", res.status);
