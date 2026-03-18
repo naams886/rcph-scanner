@@ -35,13 +35,18 @@
         }
 
         #reader__video { height: 360px !important; object-fit: cover; width: 100% !important; border-radius: 12px; }
-        #reader { width: 100% !important; border: none !important; }
-
+        #reader { 
+            width: 100% !important; 
+            border: none !important; 
+            font-size: 0.8rem !important; /* Forces library text (Launching Camera) to be small */
+        }
+        
         #reader button { 
             background-color: var(--primary-purple) !important; 
             border-radius: 10px !important; 
             font-weight: bold !important;
             border: none !important;
+            font-size: 0.8rem !important; /* Forces Start Scanning button to be small */
         }
 
         /* Control Row Layout: Shifting Input left to give Buttons room */
@@ -74,7 +79,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <h4 class="fw-bold m-0" style="font-size: 1.05rem;">1st RCPH 2026</h4>
-                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v8.1</span>
+                    <span class="badge bg-light text-dark" style="font-size: 0.55rem; opacity: 0.9;">v8.2</span>
                 </div>
                 <div class="d-flex align-items-center">
                     <span class="present-label">PRESENT</span>
@@ -128,9 +133,10 @@
     }
 
     function cleanGuestName(fullMessage) {
-        return fullMessage.split('\n')[0]
-            .replace(/✅|⚠️|❌|SUCCESS:|VERIFIED:|ALREADY CHECKED IN:|ALREADY VERIFIED:|CONFIRMED:|ERROR:/gi, '')
-            .trim();
+       return fullMessage
+        .replace(/✅|⚠️|❌|SUCCESS:|VERIFIED:|ALREADY CHECKED IN:|ALREADY VERIFIED:|CONFIRMED:|ERROR:/gi, '')
+        .replace(/\n/g, ' ')
+        .trim();
     }
 
     function showNotification(title, message, icon, color, status) {
